@@ -14,7 +14,7 @@ No publication without acknowledgement to author
 
 	15 May 2020 - project renamed to PowerMeter
 */
-
+/ comment
 // comment following line for Basic SWR/Power Metet.  Uncomment for + C-IV control
 #define		CIV										// build with CIV functions
 #define		TEENSY40								// comment this line for default = Teensy 3.2
