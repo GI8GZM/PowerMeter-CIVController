@@ -19,7 +19,7 @@ No publication without acknowledgement to author
 #define		CIV										// build with CIV functions
 #define		TEENSY40								// comment this line for default = Teensy 3.2
 #define		TOUCH_REVERSED true 					// touchscreen, true = reversed, false = normal
-#define     SCREEN_ROTATION 1						// rotation for tft and touchscreen
+#define     SCREEN_ROTATION 3						// rotation for tft and touchscreen
 
 #include <SPI.h>
 #include <ILI9341_t3.h>
