@@ -19,33 +19,59 @@ No publication without acknowledgement to author
 /*------  measure() constants -------------------------------*/
 #define	SAMPLE_FREQ		5000						// effective ADC sampling frequency - hertz
 #define MAXBUF			1000						// max size of circular buffers
-//#define MAXBUF		SAMPLE_FREQ
 #define PEAK_HOLD		2000						// average Peak Pwr hold time (mSecs)
 #define PEP_HOLD		250							// average pep hold time (mSecs)
-#define PWR_THRESHOLD   .5    						// power on threshold watts
-#define	FV_ZEROADJ      -0.0000 				    // ADC zero offset voltage
-#define	RV_ZEROADJ      -0.0000				        // ADC zero offset voltage
+#define PWR_THRESHOLD   0.5    						// power on threshold watts
 
-///*------  measure() constants -------------------------------*/
+
+/*--------------------------------------- constants for ADC -------------------------*/
+//#define	AVERAGING		0							// keep = 0 for true 12 bit resolutg
+//#define	RESOLUTION		12							// Teensy 4.0 max resolution
+//#define	CONV_SPEED		VERY_LOW_SPEED
+//#define	SAMPLE_SPEED	VERY_LOW_SPEED
+#define	AVERAGING		16							// keep = 0 for true 12 bit resolutg
+#define	RESOLUTION		16							// Teensy 4.0 max resolution
+#define	CONV_SPEED		HIGH_SPEED
+#define	SAMPLE_SPEED	HIGH_SPEED
+
+//// these setting reduce zero offset
+//#define		AVERAGING 4
+//#define		RESOLUTION 16
+//#define		CONV_SPEED HIGH_SPEED
+//#define		SAMPLE_SPEED VERY_HIGH_SPEED
+
+
+
+/*------  measure() constants -------------------------------*/
+// offset voltages
+#define	FV_ZEROADJ				-0.00015				    // ADC zero offset voltage
+#define	RV_ZEROADJ				-0.0000			        // ADC zero offset voltage
+
 // Direct power conversion constants
 // forward power constants - new coupler
-// 03/06/2020
-#define	FWD_V_SPLIT_PWR         0.015				// split voltage, direct pwr conversion
-#define	FWD_LO_MULT_PWR         0.0969				// LO pwrs = ln(v)*LO_MULT_PWR + LO_ADD_PWR
-#define FWD_LO_ADD_PWR          0.8719
-#define	FWD_HI_MULT2_PWR        10.384
-#define FWD_HI_MULT1_PWR		6.3687
-#define FWD_HI_ADD_PWR			0.4894				// HI pwr = v*v*HI_MULT2_PWR +v*HI_MULT1_PWR + HI_ADD_PWR
+// 25/07/2020 - 16 bit. Load = 1k
+#define	V_SPLIT_PWR         0.015
 
-//// Direct power conversion constants
-//// forward power constants - new coupler
-//// 01/06/2020
-//#define	FWD_V_SPLIT_PWR         0.0175				// split voltage, direct pwr conversion
-//#define	FWD_LO_MULT_PWR         0.068				// LO pwrs = ln(v)*LO_MULT_PWR + LO_ADD_PWR
-//#define FWD_LO_ADD_PWR          0.7459
-//#define	FWD_HI_MULT2_PWR        11
-//#define FWD_HI_MULT1_PWR       6
-//#define FWD_HI_ADD_PWR         .45				// HI pwr = v*v*HI_MULT2_PWR +v*HI_MULT1_PWR + HI_ADD_PWR
+// low power = v ^ LO_EXP_PWR  * LO_MULT_PWR
+#define LO_EXP_PWR			0.175
+#define	LO_MULT_PWR         1				
+
+// high power = v * v * HI_MULT2_PWR + v * MU_MULT1_PWR + HI_ADD_PWR
+#define	HI_MULT2_PWR        10.408
+#define HI_MULT1_PWR		3.6618
+#define HI_ADD_PWR			0.5786
+// HI pwr = v*v*HI_MULT2_PWR +v*HI_MULT1_PWR + HI_ADD_PWR
+
+//// 17 July 2020, 16 bit ADC, averaging = 16, speed = HIGH. load = 1K, coupler 24 turns
+//// low power = v ^ LO_EXP_PWR  * LO_MULT_PWR
+//#define	V_SPLIT_PWR         0.020
+//#define LO_EXP_PWR			0.2181
+//#define	LO_MULT_PWR         1.071				
+//
+//// high power = v * v * HI_MULT2_PWR + v * MU_MULT1_PWR + HI_ADD_PWR
+//#define	HI_MULT2_PWR        9.5842
+//#define HI_MULT1_PWR		4.1913
+//#define HI_ADD_PWR			0.4588				// HI pwr = v*v*HI_MULT2_PWR +v*HI_MULT1_PWR + HI_ADD_PWR
 
 
 #ifdef CIV
@@ -61,7 +87,8 @@ No publication without acknowledgement to author
 
 Metro netPwrTimer = Metro(50);					// net power hold timer
 Metro netPwrPkTimer = Metro(1000);					// peak power hold timer
-Metro pepTimer = Metro(1000);				   		// pep hold timer
+Metro pepTimer = Metro(300);				   		// pep hold timer
+Metro plotTimer = Metro(50);				   		// pep hold timer
 
 #ifdef CIV
 Metro civTimeOut = Metro(100);						// civ read/write watchdog timer
@@ -109,7 +136,7 @@ const int				// civ frames
 freqTune = 15,			// freqTune button frame
 aBand = 16,				// aqutoBand button frame
 
-civ = 17,				// civ frame
+modPlot = 17,				// plot frame
 tuner = 18,				// tuner
 band = 19,				// band Mtrs
 sRef = 20,				// spectrum Ref
@@ -136,10 +163,10 @@ frame fr[NUM_FRAMES];           // Copy either civFrame or Basic Frame or calFra
 
 // ------------------------------  basic (non civ) frame layout -------------------------------
 frame basicFrame[] = {
-  { 5, 10,		100, 100,	BG_COLOUR,	true,	true,	true},			// 0 - netPwr (default - netPower)
-  { 110, 10,	100, 65,	BG_COLOUR,	true,	true,	true},			// 1 - peakPwr
-  { 215, 10,	100, 65,	BG_COLOUR,	true,	true,	true},			// 2 - swr
-  { 5, 10,		100, 100,	BG_COLOUR,	true,	true,	false},			// 3 - dBm
+  {   5, 5,	100, 90,	BG_COLOUR,	true,	true,	true},			// 0 - netPwr (default - netPower)
+  { 110, 5,	100, 65,	BG_COLOUR,	true,	true,	true},			// 1 - peakPwr
+  { 215, 5,	100, 65,	BG_COLOUR,	true,	true,	true},			// 2 - swr
+  {   5, 5,	100, 90,	BG_COLOUR,	true,	true,	false},			// 3 - dBm
 
   { 5, 115,		155, 30,	BG_COLOUR,	true,	false,	false},			// 4 - fwdPwr (forward power)
   { 165, 115,	155, 30,	BG_COLOUR,	true,	false,	false},			// 5 - refPwr (reflected power)
@@ -184,10 +211,10 @@ frame basicFrame[] = {
 #ifdef CIV																	  
 //------------------------------------ civ (default) frame layout ------------------------------
 frame civFrame[] = {
-  { 5, 10,		100, 75,	BG_COLOUR,	true,	true,	true},			// 0 - netPwr (default - netPower)
-  { 110, 10,	100, 65,	BG_COLOUR,	true,	true,	true},			// 1 - peakPwr
-  { 215, 10,	100, 65,	BG_COLOUR,	true,	true,	true},			// 2 - swr
-  { 5, 10,		100, 75,	BG_COLOUR,	true,	false,	false},			// 3 - dBm
+  {   5, 5,	100, 85,	BG_COLOUR,	true,	true,	true},			// 0 - netPwr (default - netPower)
+  { 110, 5,	100, 65,	BG_COLOUR,	true,	true,	true},			// 1 - peakPwr
+  { 215, 5,	100, 65,	BG_COLOUR,	true,	true,	true},			// 2 - swr
+  {   5, 5,	100, 75,	BG_COLOUR,	true,	false,	false},			// 3 - dBm
 
   { 5, 115,		155, 30,	BG_COLOUR,	true,	false,	false},			// 4 - fwdPwr (forward power)
   { 165, 115,	155, 30,	BG_COLOUR,	true,	false,	false},			// 5 - refPwr (reflected power)
@@ -195,30 +222,27 @@ frame civFrame[] = {
   { 165, 155,	155, 50,	BG_COLOUR,	true,	false,	false},			// 7 - refVolts
 
 	// meter position														 
-  { 5, 95,		315, 55,	BG_COLOUR,	false,	true,	true},			// 8 - Pwr Meter
-  { 5, 95,		315, 55,	BG_COLOUR,	false,	true,	false},			// 9 - SWR Meter
+  { 5, 95,		315, 50,	BG_COLOUR,	false,	true,	true},			// 8 - Pwr Meter
+  { 5, 95,		315, 50,	BG_COLOUR,	false,	true,	false},			// 9 - SWR Meter
 
 	// buttons
-  { 215, 215,	105, 25,	BG_COLOUR,	true,	true,	true},			// 10 - avgOptions (avgOptions button)
+  { 215, 215,	100, 25,	BG_COLOUR,	true,	true,	true},			// 10 - avgOptions (avgOptions button)
   { 215, 25,	75, 40,		BG_COLOUR,		true,	false,	false},		// 11 - samplesDefault (averaging samples - default)
   { 215, 70,	75, 40,		BG_COLOUR,		true,	false,	false},		// 12 - samplesAltOpt	(averaging samples - alternate)
   { 215, 115,	75, 40,		BG_COLOUR,		true,	false,	false},		// 13 - samplesCalOpt	(averaging samples - calibrate mode)
   { 215, 160,	75, 40,		BG_COLOUR,		true,	false,	false},		// 14 -  weighting for expnential smoothing  
 
-  { 5, 215,		105, 25,	BG_COLOUR,	true,	true,	true},			// 15 - freqTune (freq tune button)
-  { 110, 215,	105, 25,	BG_COLOUR,	true,	true,	true},			// 16 - aBand (auto band button)
+  { 5, 215,		100, 25,	BG_COLOUR,	true,	true,	true},			// 15 - freqTune (freq tune button)
+  { 110, 215,	100, 25,	BG_COLOUR,	true,	true,	true},			// 16 - aBand (auto band button)
 
-	// civ	 - do not use
-  { 5, 150,		315, 65,	BG_COLOUR,	false,   false,	false},			// 17 - civ (CI-V panel, contains freq, band, txPwr, Ref)
+  { 5, 170,		315, 35,	BG_COLOUR,	false,   false,	false},			// 17 - modulation plot
 
 	// tuner status
-  {5, 160,		105, 45,	BG_COLOUR,	true,	true,	true},			// 18 - tuner	(radio tuner status)
-
-  // civ data displays
-  { 115, 160,	100, 45,	BG_COLOUR,	true,	true,	true},			// 19 - band (hf Band)
-  { 220, 160,	 95, 45,	BG_COLOUR,	true,	false,	false},			// 20 - ref (radio spectrum reference)
-  { 220, 160,	 95, 45,	BG_COLOUR,	true,	true,	true},			// 21 - txPwr	(radio - %TX Power)
-  { 113, 160,	200, 45,	BG_COLOUR,	true,	false,	false},			// 22 - freq	(radio frequen160, 55z)
+  {   5, 160,	100, 50,	BG_COLOUR,	true,	true,	true},			// 18 - tuner	(radio tuner status)
+  { 110, 160,	100, 50,	BG_COLOUR,	true,	true,	true},			// 19 - band (hf Band)
+  { 215, 160,	100, 50,	BG_COLOUR,	true,	false,	false},			// 20 - ref (radio spectrum reference)
+  { 215, 160,	100, 50,	BG_COLOUR,	true,	true,	true},			// 21 - txPwr	(radio - %TX Power)
+  { 110, 160,	200, 50,	BG_COLOUR,	true,	false,	false},			// 22 - freq	(radio frequen160, 55z)
 
 	// variables / parameters												  
   { 200, 10,	90, 40,		BG_COLOUR,		true,	false,	false},		// 23 - freqTuneOpt (options for freqTune by hf band)
@@ -247,7 +271,7 @@ frame calFrame[] = {
   { 215, 25,	75, 40,		BG_COLOUR,		true,	false,	false},		// 11 - samplesDefault (averaging samples - default)
   { 215, 70,	75, 40,		BG_COLOUR,		true,	false,	false},		// 12 - samplesAltOpt	(averaging samples - alternate)
   { 215, 115,	75, 40,		BG_COLOUR,		true,	false,	false},		// 13 - samplesCalOpt	(averaging samples - calibrate mode)
-  { 215, 160,	75, 40,		BG_COLOUR,		true,	false,	false},		// 14 -  weighting for expnential smoothing  
+  { 215, 160,	75, 40,		BG_COLOUR,		true,	false,	false},		// 14 - weighting for expnential smoothing  
 
 #ifdef CIV																	  
   { 5, 215,		105, 25,	BG_COLOUR,	true,	false,	false},			// 15 - freqTune (freq tune button)
@@ -293,8 +317,8 @@ label lab[] = {
   { "Ref Pwr",		YELLOW,			FONT10,		'R', 'M', false,	},		// 5 - reflected Pwr
   { "Fwd Volts",	GREENYELLOW,	FONT10,		'R', 'M', false,	},		// 6 - Forward voltage
   { "Ref Volts",	GREENYELLOW,	FONT10,		'L', 'M', false,	},		// 7 - Reflected Voltage
-  { "         Watts",	FG_COLOUR,	FONT8,		'L', 'B', false,	},		// 8 - Pwr Meter
-  { "         vSWR ",	FG_COLOUR,	FONT8,		'L', 'B', false,	},		// 9 - SWR Meter
+  { "       Watts",	FG_COLOUR,	FONT8,		'L', 'B', false,	},		// 8 - Pwr Meter
+  { "       vSWR ",	FG_COLOUR,	FONT8,		'L', 'B', false,	},		// 9 - SWR Meter
   { "Avg",			BUTTON_FG,		FONT12,		'C', 'M', false,	},		// 10 - avgOptions button
   { "",				CIV_COLOUR,		FONT14,		'L', 'M', false,	},		// 11 - default samples size
   { "",				CIV_COLOUR,		FONT14,		'R', 'M', false,	},		// 12 - alternate samples size
@@ -331,10 +355,10 @@ value val[] = {
   { 0.0, 0,	 FG_COLOUR,		FONT32,	    true},		// 1 - peakPwr
   { 0.0, 1,	 ORANGE,		FONT28,	    true},		// 2 - swr
   { 0.0, 0,	 GREEN,			FONT48,	    true},		// 3 - dbm
-  { 0.0, 2,	 ORANGE,		FONT18,	    true},		// 4 - fwdPwr
-  { 0.0, 2,	 ORANGE,		FONT18,	    true},		// 5 - refPwr
-  { 0.0, 4,	 ORANGE,		FONT20,	    true},		// 6 - fwdVolts
-  { 0.0, 4,	 ORANGE,		FONT20,	    true},		// 7 - refVolts
+  { 0.0, 3,	 ORANGE,		FONT18,	    true},		// 4 - fwdPwr
+  { 0.0, 3,	 ORANGE,		FONT18,	    true},		// 5 - refPwr
+  { 0.0, 5,	 ORANGE,		FONT20,	    true},		// 6 - fwdVolts
+  { 0.0, 5,	 ORANGE,		FONT20,	    true},		// 7 - refVolts
   { 0.0, 0,	 ORANGE,		FONT18,	    true},		// 8 - netPwrMeter
   { 0.0, 0,	 ORANGE,		FONT18,	    true},		// 9 - swrMeter
   { 0.0, 0,	 BG_COLOUR,		FONT16,	    true},		// 10 - avgOptions button
@@ -370,8 +394,8 @@ value val[] = {
 //};
 //
 meter mtr[] = {
-{ 0, 100,	4, FG_COLOUR, BG_COLOUR,   5, YELLOW, 0, },
-{ 1.0, 4.0,	4, FG_COLOUR, BG_COLOUR,   10, ORANGE, 0, },
+{ 0, 125,	5, FG_COLOUR, BG_COLOUR,   5, YELLOW, 0, },
+{ 1.0, 3.0,	4, FG_COLOUR, BG_COLOUR,   10, ORANGE, 0, },
 };
 
 #ifdef CIV

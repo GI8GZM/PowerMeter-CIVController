@@ -8,18 +8,19 @@ Swr/PowerMeter + IC7300 C-IV Controller - https://github.com/GI8GZM/PowerMeter-C
 No publication without acknowledgement to author
 -------------------------------------------------------------------------------------*/
 /*
-	Teensy 3.2 / 4.0 
+	Teensy 3.2 / 4.0
 	ILI9341 TFT liquid crystal display, 240x320 dots, RGB colour.
 	XPT2046 Touch screen,   Needs mapped to match TFT display
 
 	15 May 2020 - project renamed to PowerMeter
 */
-/ comment
+
+
 // comment following line for Basic SWR/Power Metet.  Uncomment for + C-IV control
 #define		CIV										// build with CIV functions
 #define		TEENSY40								// comment this line for default = Teensy 3.2
 #define		TOUCH_REVERSED true 					// touchscreen, true = reversed, false = normal
-#define     SCREEN_ROTATION 3						// rotation for tft and touchscreen
+#define     SCREEN_ROTATION 1						// rotation for tft and touchscreen
 
 #include <SPI.h>
 #include <ILI9341_t3.h>
@@ -83,6 +84,7 @@ void setup()
 	Serial.println("Swr/PowerMeter + C-IV Controller");
 	Serial.println("by Gi8GZM ----------------------");
 
+
 #ifdef CIV
 	// civSerial
 	civSerial.begin(19200);								// start teensy Serial1. RX1 - pin 0, TX1 - pin 1
@@ -98,12 +100,6 @@ void setup()
 	// set circular buffer default sample size
 	samples = optDefault.val;
 
-#ifdef CIV
-	// check for C-IV mode available
-	// if false, disable civMode, enable basic mode
-	if (!(bool)getFreq())
-		isCivEnable = false;
-#endif
 
 	// initialise ADC, set interrupt timer
 	initADC();
@@ -111,6 +107,13 @@ void setup()
 	// display splash screen
 	analogWrite(DIM_PIN, TFT_FULL);
 	splashScreen();
+
+#ifdef CIV
+	// check for C-IV mode available
+	// if false, disable civMode, enable basic mode
+	if (!(bool)getFreq())
+		isCivEnable = false;
+#endif
 
 	// draw screen etc
 	initDisplay();
@@ -356,15 +359,16 @@ heartbeat()  - timer, displays pulsing dot top left corner
 void heartBeat()
 {
 	static bool isHeartBeat;
+	int x = 12, y = 12;
 
 	if (heartBeatTimer.check())
 	{
 		if (isHeartBeat) {
-			tft.fillCircle(12, 18, 5, FG_COLOUR);
+			tft.fillCircle(x, y, 5, FG_COLOUR);
 			heartBeatTimer.reset();
 		}
 		else
-			tft.fillCircle(12, 18, 5, BG_COLOUR);
+			tft.fillCircle(x, y, 5, BG_COLOUR);
 
 		// set/reset flag, toggle indicator on/off
 		isHeartBeat = !isHeartBeat;

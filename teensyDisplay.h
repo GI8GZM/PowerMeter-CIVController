@@ -19,6 +19,7 @@ No publication without acknowledgement to author
 //#endif
 //
 
+
 /*---------- Teensy pin assignments (use for wiring) --------------------------------------
 board: referes to ILI9341 + Touch board   */
 #define	DIM_PIN         3							// board: 8(LED) analog out pin for display LED & dimming
@@ -45,7 +46,7 @@ ILI9341_t3	tft = ILI9341_t3(TFT_CS_PIN, TFT_DC_PIN);		// define tft device
 #define		TFT_FULL 255							// tft display full brightness
 #define		TFT_DIM	20								// tft display dim value
 #define		TFT_OFF	0								// tft display off
-#define		SPLASH_DELAY 4 * 1000						// splash screen dealy, mSecs.. At power on, allow time for radio to boot
+#define		SPLASH_DELAY 5 * 1000					// splash screen delay, mSecs.. At power on, allow time for radio to boot
 
 /*----------XPT2046 touchscreen	-----------------------------*/
 XPT2046_Touchscreen ts(TS_CS_PIN, TS_IRQ_PIN);		// allows touch screen interrupts
@@ -135,22 +136,6 @@ struct meter {
 
 
 
-#if 1
-#include <font_ArialBold.h>
-#include <font_Arial.h>
-#include <font_LiberationMonoBold.h>
-//#include "D:\Downloads\Teensy\fonts\fonts\ofl\acme\font_AcmeRegular.h"
-
-#include "font_LiberationMono.h"
-#include "font_DroidSans.h"
-#include "font_DroidSans_Bold.h"
-#include "font_DroidSansMono.h"
-#include "font_CourierNew.h"
-#include "font_CourierNewBold.h"
-#include "font_ComicSansMSBold.h"
-#include "font_TimesNewRomanBold.h"
-#include "font_AwesomeF100.h"
-#endif
 
 // fonts for display variables
 #define FONT8 LiberationSansNarrow_8_Bold

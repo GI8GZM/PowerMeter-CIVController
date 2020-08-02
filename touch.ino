@@ -80,7 +80,7 @@ int chkTouchOption(int n, bool isRepeat)
 	} while (!isTouch);
 
 	if (!isRepeat)
-		// empty touch buffer for excess long touch
+		// empty touch buffer for excess long touch / multiple touches
 		while (ts.touched());
 
 	return i;		// return item touched

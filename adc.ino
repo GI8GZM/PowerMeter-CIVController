@@ -14,19 +14,6 @@ No publication without acknowledgement to author
 // enables adc interrupt timer
 // getADC() samples voltages, averages and peaks
 
-
-/*--------------------------------------- constants for ADC -------------------------*/
-#define	AVERAGING		0							// keep = 0 for true 12 bit resolutg
-#define	RESOLUTION		12							// Teensy 4.0 max resolution
-#define	CONV_SPEED		VERY_LOW_SPEED
-#define	SAMPLE_SPEED	VERY_LOW_SPEED
-
-// these setting reduce zero offset
-//#define		AVERAGING 4
-//#define		RESOLUTION 16
-//#define		CONV_SPEED HIGH_SPEED
-//#define		SAMPLE_SPEED VERY_HIGH_SPEED
-
 /*---------------------------------------------------------
 ADC functions and defines
 ADC id triggered by interrupt interval timer
@@ -56,7 +43,7 @@ void getADC()
 	volatile static unsigned int refS[MAXBUF + 1] = {};		// ref buffer used by interrupt routine
 
 	// samples related to sample frequency
-	currAvgSamples = samples * SAMPLE_FREQ / 100;
+	//currAvgSamples = samples * SAMPLE_FREQ / 100;
 	currAvgSamples = samples * MAXBUF / 100;
 
 	// check for change of currSamplesAvg, reset buffers, etc
@@ -74,19 +61,26 @@ void getADC()
 		refPk = 0;
 	}
 
-	// read ADC, both channels
+
+	//adc->startSynchronizedSingleRead(FWD_ADC_PIN, REF_ADC_PIN);
+	//result = adc->readSynchronizedSingle();
+	//adc->startSynchronizedContinuous(FWD_ADC_PIN, REF_ADC_PIN);
+	//result = adc->readSynchronizedContinuous();
+
+
+
+	// read ADC, both channels. 16bit needs unsigned
+
 	result = adc->analogSyncRead(FWD_ADC_PIN, REF_ADC_PIN);
 
 	// circular / FIFO buffer (moving) averaging
-	// do reflected first to have refS[sample] for peak
+	// do reflected power first to have refS[sample] for peak
 	refSum = refSum - refS[sample];							// remove oldest from running total
-	refS[sample] = result.result_adc0;						// save result
-	//refS[sample] = 0;						// save result
+	refS[sample] = (uint16_t)result.result_adc0;						// save result
 	refSum = refSum + refS[sample];							// add newest to running total
 
 	fwdSum = fwdSum - fwdS[sample];
-	fwdS[sample] = result.result_adc1;
-	//fwdS[sample] = 0;
+	fwdS[sample] = (uint16_t)result.result_adc1;
 	fwdSum = fwdSum + fwdS[sample];
 
 	// peak forward sample + corresponding reflected
@@ -108,6 +102,8 @@ void getADC()
 		 // reset peaks to current sample
 		fwdPk = fwdS[sample];
 		refPk = refS[sample];
+		//fwdPk = 0;
+		//refPk = 0;
 
 		//digitalWrite(TEST_PIN, !digitalRead(TEST_PIN));
 	}

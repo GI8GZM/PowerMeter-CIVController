@@ -52,10 +52,12 @@ void measure()
 
 		// apply exponential smoothing
 		float weight = (float)optWeight.val / 1000;
+		weight = 1;
 		fwdV = sigProcess(fwdV, fwdVPrev, weight);
 		fwdVPrev = fwdV;
 		refV = sigProcess(refV, refVPrev, weight);
 		refVPrev = refV;
+		weight = 1;
 		fwdPkV = sigProcess(fwdPkV, fwdPkVPrev, weight);
 		fwdPkVPrev = fwdPkV;
 		refPkV = sigProcess(refPkV, refPkVPrev, weight);
@@ -112,7 +114,7 @@ void measure()
 		// swr calculation - only calculate if power on. do not use netPwr as signal processed
 		// use power, not volts, as curve linearity already compensated
 		// peak power preferred - stops SWR changes on power off as netpower decreases
-		if (netPwr > PWR_THRESHOLD * 10 && fwdPkPwr > refPkPwr)
+		if (fwdPkPwr > PWR_THRESHOLD && fwdPkPwr > refPkPwr)
 		{
 			// reflection coefficient
 			float rc = sqrt(refPkPwr / fwdPkPwr);
@@ -156,12 +158,14 @@ void measure()
 		displayValue(netPower, netPwr);
 		displayValue(dBm, dB);
 		displayValue(peakPower, pkPwr);
+
 		displayValue(fwdPower, fwdPwr);
 		displayValue(refPower, refPwr);
 		displayValue(fwdVolts, fwdV);
 		displayValue(refVolts, refV);
 		drawMeter(netPwrMeter, netPwr, pkPwr);
 		drawMeter(swrMeter, swr, 1);
+		//plot((int(pep)));
 
 #ifdef CIV
 		// get and display frequency, needed here for swr / frequency manual sweep
@@ -207,24 +211,24 @@ float pwrCalc(float v)
 	float pwr = 0.0;
 
 	// low power below split (non-linear)
-	if (v < FWD_V_SPLIT_PWR)
-		pwr = log(v) * FWD_LO_MULT_PWR + FWD_LO_ADD_PWR;
+	if (v < V_SPLIT_PWR)
+		pwr = (pow(v, LO_EXP_PWR)) * LO_MULT_PWR;
 	else
 		// high power
-		pwr = v * v * FWD_HI_MULT2_PWR + v * FWD_HI_MULT1_PWR + FWD_HI_ADD_PWR;
+		pwr = v * v * HI_MULT2_PWR + v * HI_MULT1_PWR + HI_ADD_PWR;
 
 	// check for division by zero and < 0
-	if (pwr < 0 || !isnormal(pwr) || isnan(pwr))			
+	if (pwr < 0 || !isnormal(pwr) || isnan(pwr))
 		pwr = 0.0;
 
 #ifdef CIV	
 	// adjust power for freq response of coupler
-	if (isCivEnable)
-		return (pwr * hfBand[currBand].pwrMult);			// return power (watts)
-	else
+	//if (isCivEnable)
+	//	return (pwr * hfBand[currBand].pwrMult);			// return power (watts)
+	//else
 #endif
 
-		return pwr;
+	return pwr;
 }
 
 
@@ -237,11 +241,11 @@ float sigProcess(float currSig, float prevSig, float weight)
 {
 	float sig;
 
-	if (currSig > prevSig)
-		// fast attack - immediate step up to higher value
-		sig = currSig;
-	else
-		// exponential decay
+	//if (currSig > prevSig)
+	//	// fast attack - immediate step up to higher value
+	//	sig = currSig;
+	//else
+		 // exponential decay
 		sig = weight * currSig + (1 - weight) * prevSig;
 
 	return sig;

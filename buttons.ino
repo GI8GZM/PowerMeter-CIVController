@@ -62,22 +62,23 @@ void peakPwrButton(int tStat)
 	restoreFrame(peakPower);
 
 	// toggle normal(civ) mode and calibrate mode
+	static bool isCalMode = false;					// normal/calmode flag
 	if (tStat == 2)
 	{
-
-		lab[peakPower].stat = !lab[peakPower].stat;
-		// lab[peakPower].stat = true for normal mode
-		if (!lab[peakPower].stat)
+		if (!isCalMode)
 		{
 			// calibrate
 			samples = optCal.val;
 			copyFrame(calFrame);
 			drawDisplay();
+			isCalMode = true;
 		}
 		else
 		{
 			// normal mode
 			samples = optDefault.val;
+			isCalMode = false;
+
 #ifdef CIV
 			copyFrame(civFrame);
 #endif
