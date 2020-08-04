@@ -33,6 +33,7 @@ board: referes to ILI9341 + Touch board   */
 
 #define FWD_ADC_PIN     15                          // (A1) ACD input pin - forward power
 #define REF_ADC_PIN     16                          // (A2) ACD input pin- reflected power
+#define VIN_ADC_PIN		18							// ADC VCC measurement
 #define SERIAL_RX1      0                           // Serial1 RX pin
 #define SERIAL_TX1      1                           // Serial1 Tx pin
 #define SERIAL_RX3      7                           // Serial3 RX pin

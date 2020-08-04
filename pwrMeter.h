@@ -121,7 +121,7 @@ fwdPower = 4,			// forward Pwr
 refPower = 5,			// reflected Pwr
 fwdVolts = 6,			// forward volts
 refVolts = 7,			// reflected volts
-
+vInVolts = 8,			// vIn volts
 netPwrMeter = 8,		// power meter
 swrMeter = 9,			// swr meter
 

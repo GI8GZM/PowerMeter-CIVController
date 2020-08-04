@@ -22,6 +22,9 @@ void measure()
 	float netPwr, pep, dB, swr = 1.0;
 	static float pkPwr = 0;
 
+	float vIn;
+	static float vInPrev = 0;													// measure VCC
+
 	static float fwdVPrev = 0, refVPrev = 0;							// variables for exponential smoothing
 	static float fwdPkVPrev = 0, refPkVPrev = 0;						// variables for exponential smoothing
 
@@ -35,6 +38,11 @@ void measure()
 	do
 	{
 		digitalWrite(TEST_PIN, !digitalRead(TEST_PIN));					// toggle test pin to HALF frequency
+
+		// measure radio input volts, 4k7 / 1k  divider
+		vIn = (float)adc->analogRead(VIN_ADC_PIN) * adcConvert * 5.7;
+		vIn= sigProcess(vIn, vInPrev, 0.5);
+		vInPrev = vIn;
 
 		// get ACD results - stop / restart interrupts while copying interrupt data
 		noInterrupts();
@@ -246,7 +254,7 @@ float sigProcess(float currSig, float prevSig, float weight)
 	//	sig = currSig;
 	//else
 		 // exponential decay
-		sig = weight * currSig + (1 - weight) * prevSig;
+	sig = weight * currSig + (1 - weight) * prevSig;
 
 	return sig;
 }
