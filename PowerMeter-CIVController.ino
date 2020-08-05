@@ -180,7 +180,7 @@ void loop()
 		if (isDim)
 			resetDimmer();								// reset dimmer
 		else
-			chkTouchFrame(MAX_ROWS);					// check for touch or button press
+			chkTouchFrame(sizeof(fr) / sizeof(frame));					// check for touch or button press
 	}
 }
 
@@ -201,8 +201,7 @@ void initDisplay()
 	if (isCivEnable)
 	{
 		// copy C-IV frame settings to working frame fr
-		copyFrame(civFrame, sizeof(civFrame) / sizeof(frame));
-		val[netPower].font = FONT40;						// reset netPwr font
+		copyFrame(defFrame, sizeof(defFrame) / sizeof(frame));
 
 		// get frequency and band
 		currFreq = getFreq();
@@ -226,7 +225,6 @@ void initDisplay()
 	{
 		// civ disabled, copy basic swr/powermeter frame layout basics
 		copyFrame(basicFrame, sizeof(basicFrame) / sizeof(frame));
-		val[netPower].font = FONT48;
 	}
 
 	// draw enabled display frames labels and values
@@ -248,7 +246,8 @@ void drawDisplay()
 	tft.fillScreen(BG_COLOUR);							// set tft background colour
 
 	// draw enabled display frames, labels and values
-	for (int i = 0; i < MAX_ROWS; i++)			// do all frames, except for experimental freq meter
+	int numRows = sizeof(fr) / sizeof(frame);
+	for (int i = 0; i < numRows; i++)
 	{
 		displayLabel(i);								// displays only enabled
 		val[i].isUpdate = true;							// force values redisplay
@@ -319,8 +318,9 @@ copies default frame setting (frame.h) to  frame pointer
 -------------------------------------------------------------------------------*/
 void copyFrame(frame* fPtr, int rows)
 {
-	// initialise frame
-	for (int i = 0; i < MAX_ROWS; i++)
+	// initialise frame - disable all rows
+	int maxRows = MAX_ROWS;
+	for (int i = 0; i < maxRows; i++)
 	{
 		fr[i].x = 0;
 		fr[i].y = 0;
@@ -373,16 +373,27 @@ heartbeat()  - timer, displays pulsing dot top left corner
 void heartBeat()
 {
 	static bool isHeartBeat;
-	int x = 12, y = 12;
+	int x = 10, y = 10;
+
+	tft.setFont(FONT_HB);
 
 	if (heartBeatTimer.check())
 	{
-		if (isHeartBeat) {
-			tft.fillCircle(x, y, 5, FG_COLOUR);
+		if (isHeartBeat) 
+		{
+			//tft.fillCircle(x, y, 5, FG_COLOUR);
+			tft.setCursor(x, y);
+			tft.setTextColor(PINK);
+			tft.write(HEART_SYMBOL);
 			heartBeatTimer.reset();
 		}
 		else
-			tft.fillCircle(x, y, 5, BG_COLOUR);
+		{
+			//tft.fillCircle(x, y, 5, BG_COLOUR);
+			tft.setCursor(x, y);
+			tft.setTextColor(BG_COLOUR);
+			tft.write(HEART_SYMBOL);
+		}
 
 		// set/reset flag, toggle indicator on/off
 		isHeartBeat = !isHeartBeat;

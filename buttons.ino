@@ -80,7 +80,7 @@ void peakPwrButton(int tStat)
 			isCalMode = false;
 
 #ifdef CIV
-			copyFrame(civFrame, sizeof(civFrame) / sizeof(frame));
+			copyFrame(defFrame, sizeof(defFrame) / sizeof(frame));
 #endif
 			initDisplay();
 		}

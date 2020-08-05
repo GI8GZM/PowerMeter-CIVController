@@ -109,7 +109,9 @@ constexpr int putBCD(int n)
 	return (n / 10 * 16 + n % 10);
 }
 
-// Frame positions --------------------------------------------------------------------------
+
+/* ------------   define frame positions, text formats, value display ----------------*/
+// Frame positions -------------------------
 enum frameNames {
 	vInVolts,			// vIn volts
 	netPower,			// net Pwr
@@ -140,16 +142,6 @@ enum frameNames {
 };
 
 // frame ------------------------------------------------------------------------
-
-#ifdef CIV
-#define MAX_ROWS 26
-#else
-#define NUM_FRAMES 16
-#endif
-
-#define RADIUS 5				// frame corner radius
-#define LINE_COLOUR LIGHTGREY	// frame line colour
-
 // structure definitions
 struct frame {
 	int x;							// top left corner - x coord
@@ -162,52 +154,14 @@ struct frame {
 	bool isEnable;					// enable frame & CONTENTS
 };
 
-// working frame array - copy in civFrame, basicFrame or calFrame
-frame fr[MAX_ROWS];							
-
-// basic (non civ) frame layout 
-frame basicFrame[] = {
-	{ 110, 75, 100, 15,		BG_COLOUR,	false,	true,	true},			// vIn volts
-	{ 5, 5, 100, 90,		BG_COLOUR,	true,	true,	true},			// net Pwr
-	{ 110, 5, 100, 65,	BG_COLOUR,	true,	true,	true},			// peak Pwr
-	{ 215, 5, 100, 65,	BG_COLOUR,	true,	true,	true},			// VSWR frame
-	{ 5, 5, 100, 90,		BG_COLOUR,	true,	true,	false},			// dBm
-	{ 5, 115,	155, 30,	BG_COLOUR,	true,	false,	false},			// forward Pwr
-	{ 165, 115, 155, 30,	BG_COLOUR,	true,	false,	false},			// reflected Pwr
-	{ 5, 155,	155, 50,	BG_COLOUR,	true,	false,	false},			// forward volts
-	{ 165, 155, 155, 50,	BG_COLOUR,	true,	false,	false},			// reflected volts
-	{ 5, 110,	315, 50,	BG_COLOUR,	false,	true,	true},			// power meter
-	{ 5, 160, 315, 50,	BG_COLOUR,	false,	true,	true},			// swr meter
-	{ 215, 215, 105, 25,	BG_COLOUR,	true,	true,	true},			// options button frame
-	{ 215, 25, 75, 40,	BG_COLOUR,	true,	false,	false},			// samples - calibrate
-	{ 215, 70, 75, 40,	BG_COLOUR,	true,	false,	false},			// samples - default
-	{ 215, 115, 75, 40,	BG_COLOUR,	true,	false,	false},			// samples - alternate
-	{ 215, 160, 75, 40,	BG_COLOUR,	true,	false,	false},			// weighting for exp smoothing
-
-//#ifdef CIV															
-//	 { 5, 215, 105, 25,		BG_COLOUR,	true,	false,	false},			// freqTune button frame
-//	 { 110, 215, 105, 25,	BG_COLOUR,	true,	false,	false},			// aqutoBand button frame
-//	 { 5, 150, 315, 65,		BG_COLOUR,	true,   false,	false},			// plot frame
-//	 { 5, 160, 105, 45,		BG_COLOUR,	true,	false,	false},			// tuner
-//	 { 115, 160, 100, 45,	BG_COLOUR,	true,	false,	false},			// band Mtrs
-//	 { 220, 160, 95, 45,	BG_COLOUR,	true,	false,	false},			// spectrum Ref
-//	 { 220, 160, 95, 45,	BG_COLOUR,	true,	false,	false},			// % Tx power
-//	 { 113, 160, 200, 45,	BG_COLOUR,	true,	false,	false},			// freq Mhz
-//	 { 200, 10,	90, 40,		BG_COLOUR,	true,	false,	false},			// freq tune option - difference
-//	 { 200, 125, 90, 40,	BG_COLOUR,	true,	false,	false},			// auto band time option
-//#endif
-
-};
-
-
 #ifdef CIV																	  
-// civ (default) frame layout 
-frame civFrame[] = {
-	{ 110, 75, 100, 15,		BG_COLOUR,	false,	true,	true},			// vIn volts
+// default frame layout 
+frame defFrame[] = {
+	{ 110, 75, 100, 15,		BG_COLOUR,	false,	false,	false},			// vIn volts
 	{ 5, 5, 100, 85,		BG_COLOUR,	true,	true,	true},			// net Pwr
 	{ 110, 5, 100, 65,		BG_COLOUR,	true,	true,	true},			// peak Pwr
 	{ 215, 5, 100, 65,		BG_COLOUR,	true,	true,	true},			// VSWR frame
-	{ 5, 5, 100, 75,		BG_COLOUR,	true,	false,	false},			// dBm
+	{ 5, 5, 100, 85,		BG_COLOUR,	true,	false,	false},			// dBm
 	{ 5, 115, 155, 30,		BG_COLOUR,	true,	false,	false},			// forward Pwr
 	{ 165, 115, 155, 30,	BG_COLOUR,	true,	false,	false},			// reflected Pwr
 	{ 5, 155, 155, 50,		BG_COLOUR,	true,	false,	false},			// forward volts
@@ -221,7 +175,7 @@ frame civFrame[] = {
 	{ 215, 160, 75, 40,		BG_COLOUR,	true,	false,	false},			// weighting for exp smoothing
 	{ 5, 215, 100, 25,		BG_COLOUR,	true,	true,	true},			// freqTune button frame
 	{ 110, 215,	100, 25,	BG_COLOUR,	true,	true,	true},			// aqutoBand button frame
-	{ 5, 170, 315, 35,		BG_COLOUR,	false,   false,	false},			// plot frame
+	{ 5, 170, 315, 35,		BG_COLOUR,	false,  false,	false},			// plot frame
 	{ 5, 160, 100, 50,		BG_COLOUR,	true,	true,	true},			// tuner
 	{ 110, 160, 100, 50,	BG_COLOUR,	true,	true,	true},			// band Mtrs
 	{ 215, 160,	100, 50,	BG_COLOUR,	true,	false,	false},			// spectrum Ref
@@ -232,13 +186,33 @@ frame civFrame[] = {
 };
 #endif
 
+// basic frame layout 
+frame basicFrame[] = {
+	{ 110, 75, 100, 15,		BG_COLOUR,	false,	false,	false},			// vIn volts
+	{ 5, 5, 100, 90,		BG_COLOUR,	true,	true,	true},			// net Pwr
+	{ 110, 5, 100, 65,		BG_COLOUR,	true,	true,	true},			// peak Pwr
+	{ 215, 5, 100, 65,		BG_COLOUR,	true,	true,	true},			// VSWR frame
+	{ 5, 5, 100, 85,		BG_COLOUR,	true,	true,	false},			// dBm
+	{ 5, 115,	155, 30,	BG_COLOUR,	true,	false,	false},			// forward Pwr
+	{ 165, 115, 155, 30,	BG_COLOUR,	true,	false,	false},			// reflected Pwr
+	{ 5, 155,	155, 50,	BG_COLOUR,	true,	false,	false},			// forward volts
+	{ 165, 155, 155, 50,	BG_COLOUR,	true,	false,	false},			// reflected volts
+	{ 5, 110,	315, 50,	BG_COLOUR,	false,	true,	true},			// power meter
+	{ 5, 160, 315, 50,		BG_COLOUR,	false,	true,	true},			// swr meter
+	{ 215, 215, 105, 25,	BG_COLOUR,	true,	true,	true},			// options button frame
+	{ 215, 25, 75, 40,		BG_COLOUR,	true,	false,	false},			// samples - calibrate
+	{ 215, 70, 75, 40,		BG_COLOUR,	true,	false,	false},			// samples - default
+	{ 215, 115, 75, 40,		BG_COLOUR,	true,	false,	false},			// samples - alternate
+	{ 215, 160, 75, 40,		BG_COLOUR,	true,	false,	false},			// weighting for exp smoothing
+};
+
 // calibration frame layout
 frame calFrame[] = {
-	{ 110, 75, 100, 15,		BG_COLOUR,	false,	true,	true},			// vIn volts
+	{ 110, 75, 205, 25,		BG_COLOUR,	true,	false,	true},			// vIn volts
 	{ 5, 5,	100, 85,		BG_COLOUR,	true,	true,	true},			// net Pwr
-	{ 110, 10, 100, 65,		BG_COLOUR,	true,	true,	true},			// peak Pwr
-	{ 215, 10, 100, 65,		BG_COLOUR,	true,	false,	true},			// VSWR frame
-	{ 5, 10, 100, 75,		BG_COLOUR,	true,	false,	false},			// dBm
+	{ 110, 5, 100, 65,		BG_COLOUR,	true,	true,	true},			// peak Pwr
+	{ 215, 5, 100, 65,		BG_COLOUR,	true,	true,	true},			// VSWR frame
+	{ 5, 5, 100, 85,		BG_COLOUR,	true,	false,	false},			// dBm
 	{ 5, 115, 155, 30,		BG_COLOUR,	true,	false,	true},			// forward Pwr
 	{ 165, 115, 155, 30,	BG_COLOUR,	true,	false,	true},			// reflected Pwr
 	{ 5, 155, 155, 50,		BG_COLOUR,	true,	false,	true},			// forward volts
@@ -250,23 +224,22 @@ frame calFrame[] = {
 	{ 215, 70, 75, 40,		BG_COLOUR,	true,	false,	false},			// samples - default
 	{ 215, 115, 75, 40,		BG_COLOUR,	true,	false,	false},			// samples - alternate
 	{ 215, 160, 75, 40,		BG_COLOUR,	true,	false,	false},			// weighting for exp smoothing
-																		
-//#ifdef CIV																
-//	{ 5, 215, 105, 25,		BG_COLOUR,	true,	false,	false},			// freqTune button frame
-//	{ 110, 215,	105, 25,	BG_COLOUR,	true,	false,	false},			// aqutoBand button frame
-//	{ 5, 150, 315, 65,		BG_COLOUR,	true,   false,	false},			// plot frame
-//	{ 5, 160, 105, 45,		BG_COLOUR,	true,	false,	false},			// tuner
-//	{ 115, 160, 100, 45,	BG_COLOUR,	true,	false,	false},			// band Mtrs
-//	{ 220, 160,	95, 45,		BG_COLOUR,	true,	false,	false},			// spectrum Ref
-//	{ 220, 160,	95, 45,		BG_COLOUR,	true,	false,	false},			// % Tx power
-//	{ 113, 160,	200, 45,	BG_COLOUR,	true,	false,	false},			// freq Mhz
-//	{ 200, 10, 90, 40,		BG_COLOUR,	true,	false,	false},			// freq tune option - difference
-//	{ 200, 125,	90, 40,		BG_COLOUR,	true,	false,	false},			// auto band time option
-//#endif
-
 };
 
-// label --------------------------------------------------------------------------------------------------------
+#ifdef CIV
+#define MAX_ROWS sizeof(defFrame)/sizeof(frame)
+#else
+#define NUM_FRAMES 16
+#endif
+frame fr[MAX_ROWS];					// working frame array - copy in defFrame, basicFrame or calFrame				
+
+#define RADIUS 5				// frame corner radius
+#define LINE_COLOUR LIGHTGREY	// frame line colour
+
+
+
+
+// label -------------------------------------------------------------------
 #define GAP 5						// gap from frame outline
 struct label {
 	char txt[30];					// frame label text
@@ -278,7 +251,7 @@ struct label {
 };
 
 label lab[] = {
-	{ "Volts In: ",	YELLOW,			FONT10,		'L', 'M', false,	},		// vIn volts
+	{ "     Supply Volts: ",	YELLOW,		FONT12,		'L', 'M', false,	},		// vIn volts
 	{ "Watts",		FG_COLOUR,		FONT14,     'C', 'B', false,	},		// net Pwr
 	{ "Pep",		FG_COLOUR,		FONT14,		'C', 'B', false,	},		// peak Pwr
 	{ "vSWR",		FG_COLOUR,		FONT14,		'C', 'B', false,	},		// VSWR frame
@@ -324,7 +297,7 @@ value val[] = {
 	{ 0.0, 0,	 FG_COLOUR,		FONT40,	    true},		// net Pwr
 	{ 0.0, 0,	 FG_COLOUR,		FONT32,	    true},		// peak Pwr
 	{ 0.0, 1,	 ORANGE,		FONT28,	    true},		// VSWR frame
-	{ 0.0, 0,	 GREEN,			FONT48,	    true},		// dBm
+	{ 0.0, 0,	 GREEN,			FONT40,	    true},		// dBm
 	{ 0.0, 3,	 ORANGE,		FONT18,	    true},		// forward Pwr
 	{ 0.0, 3,	 ORANGE,		FONT18,	    true},		// reflected Pwr
 	{ 0.0, 5,	 ORANGE,		FONT20,	    true},		// forward volts

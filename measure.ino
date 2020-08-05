@@ -22,12 +22,10 @@ void measure()
 	float netPwr, pep, dB, swr = 1.0;
 	static float pkPwr = 0;
 
-	float vIn;
-	static float vInPrev = 0;													// measure VCC
-
 	static float fwdVPrev = 0, refVPrev = 0;							// variables for exponential smoothing
 	static float fwdPkVPrev = 0, refPkVPrev = 0;						// variables for exponential smoothing
 
+	float vIn;
 	float adcConvert = 3.3 / adc->adc0->getMaxValue();					// 3.3 (max volts) / adc max value, varies with resolution+
 
 	// set true for netPower display (red b/ground)
@@ -40,9 +38,8 @@ void measure()
 		digitalWrite(TEST_PIN, !digitalRead(TEST_PIN));					// toggle test pin to HALF frequency
 
 		// measure radio input volts, 4k7 / 1k  divider
-		vIn = (float)adc->analogRead(VIN_ADC_PIN) * adcConvert * 5.7;
-		vIn= sigProcess(vIn, vInPrev, 0.5);
-		vInPrev = vIn;
+		int va = (uint16_t)adc->analogRead(VIN_ADC_PIN);
+		vIn = (float)va * adcConvert * 5.7;
 
 		// get ACD results - stop / restart interrupts while copying interrupt data
 		noInterrupts();
@@ -189,7 +186,7 @@ void measure()
 
 		// check if screen has been touched
 		if (ts.tirqTouched())
-			chkTouchFrame(MAX_ROWS);
+			chkTouchFrame(sizeof(fr)/sizeof(frame));
 
 		// ensure measure loop slower than getADC() sample frequency
 		// measure loop = 30microsecs, delay(>5) millisecs

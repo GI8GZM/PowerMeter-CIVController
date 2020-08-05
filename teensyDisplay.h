@@ -66,7 +66,7 @@ const int LONGTOUCH = 2;
 
 
 /* ---------------- Metro Timers -----------*/
-Metro heartBeatTimer = Metro(250);			        // heartbeat timer
+Metro heartBeatTimer = Metro(500);			        // heartbeat timer
 Metro longTouchTimer = Metro(750);			        // long touch timer
 Metro dimTimer = Metro(15 * 60 * 1000);				// dimmer timer (mins)
 
@@ -154,6 +154,8 @@ void displayLabel(int posn, char* = NULL);
 #define	    FONT_PM AwesomeF000_16					// font for plus/minus symbols
 #define		PLUS_SYMBOL 85							// + symbol
 #define		MINUS_SYMBOL 86							// - symbol
+#define		FONT_HB AwesomeF000_10					// font for heartbeat
+#define		HEART_SYMBOL 4							// heart symbol
 #define     COPYRIGHT_SYMBOL 121                    // copyright symbol (AwesomeF018_14 font)
 #define	    T_OFFSET 15							    // touch offset distance (pixels)
 //const int TICK_SYMBOL = 12;						// Awesome_F000 character

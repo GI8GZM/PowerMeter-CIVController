@@ -1,6 +1,5 @@
 void plot(int p)
 {
-	static int i = 0;
 #define XMAX 320
 
 	static int s[XMAX + 1] = {};
