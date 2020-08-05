@@ -71,52 +71,9 @@ Metro longTouchTimer = Metro(750);			        // long touch timer
 Metro dimTimer = Metro(15 * 60 * 1000);				// dimmer timer (mins)
 
 
-
  // set up default arguements for functions
 void displayValue(int posn, float curr, bool isUpdate = false);
 void displayLabel(int posn, char* = NULL);
-
-
-// structure definitions
-struct frame {
-	int x;							// top left corner - x coord
-	int y;							// top left corner - y coord
-	int w;							// horizontal width
-	int h;							// vertical height
-	int bgColour;					// frame background colour
-	bool isOutLine;					// outline flg / don't display
-	bool isTouch;					// frame enabled for touch
-	bool isEnable;					// enable frame & CONTENTS
-};
-
-struct label {
-	char txt[30];					// frame label text
-	int colour;						// text colour
-	ILI9341_t3_font_t  font;		// text font size
-	char xJustify;					// 'L'eft, 'C'entre, 'R'ight
-	char yJustify;					// 'T'op, 'M'iddle, 'B'ottom
-	int stat;						// status, used for update label display, -1 for errors
-};
-
-struct value {
-	float prevDispVal;				// previous display value
-	int decs;						// decimals
-	int colour;						// text colour
-	ILI9341_t3_font_t  font;		// text font size
-	bool isUpdate;					// true forces display update
-};
-
-struct meter {
-	float sStart;					// start value for scale
-	float sEnd;						// end value for scale
-	int major;						// number major scale divisions
-	int tColour;					// meter bar gradient top colour
-	int bColour;					// meter bar bottom colour
-	int pkWidth;					// peak indicator width
-	int pkColour;					// peak indicator colour
-	int pkPrevPosn;					// peak indicator prev position
-};
-
 
 
 /*---------- Teensy restart code (long press on Peak Power frame)--------*/

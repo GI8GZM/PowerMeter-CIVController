@@ -69,7 +69,7 @@ void peakPwrButton(int tStat)
 		{
 			// calibrate
 			samples = optCal.val;
-			copyFrame(calFrame);
+			copyFrame(calFrame, sizeof(calFrame)/sizeof(frame));
 			drawDisplay();
 			isCalMode = true;
 		}
@@ -80,7 +80,7 @@ void peakPwrButton(int tStat)
 			isCalMode = false;
 
 #ifdef CIV
-			copyFrame(civFrame);
+			copyFrame(civFrame, sizeof(civFrame) / sizeof(frame));
 #endif
 			initDisplay();
 		}

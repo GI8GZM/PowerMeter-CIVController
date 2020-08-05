@@ -180,7 +180,7 @@ void loop()
 		if (isDim)
 			resetDimmer();								// reset dimmer
 		else
-			chkTouchFrame(NUM_FRAMES);					// check for touch or button press
+			chkTouchFrame(MAX_ROWS);					// check for touch or button press
 	}
 }
 
@@ -201,7 +201,7 @@ void initDisplay()
 	if (isCivEnable)
 	{
 		// copy C-IV frame settings to working frame fr
-		copyFrame(civFrame);
+		copyFrame(civFrame, sizeof(civFrame) / sizeof(frame));
 		val[netPower].font = FONT40;						// reset netPwr font
 
 		// get frequency and band
@@ -225,7 +225,7 @@ void initDisplay()
 #endif
 	{
 		// civ disabled, copy basic swr/powermeter frame layout basics
-		copyFrame(basicFrame);
+		copyFrame(basicFrame, sizeof(basicFrame) / sizeof(frame));
 		val[netPower].font = FONT48;
 	}
 
@@ -248,7 +248,7 @@ void drawDisplay()
 	tft.fillScreen(BG_COLOUR);							// set tft background colour
 
 	// draw enabled display frames, labels and values
-	for (int i = 0; i < NUM_FRAMES; i++)			// do all frames, except for experimental freq meter
+	for (int i = 0; i < MAX_ROWS; i++)			// do all frames, except for experimental freq meter
 	{
 		displayLabel(i);								// displays only enabled
 		val[i].isUpdate = true;							// force values redisplay
@@ -317,9 +317,23 @@ void splashScreen()
 /*--------------------------- copyFrame() ---------------------------------------
 copies default frame setting (frame.h) to  frame pointer
 -------------------------------------------------------------------------------*/
-void copyFrame(frame* fPtr)
+void copyFrame(frame* fPtr, int rows)
 {
-	for (int i = 0; i < NUM_FRAMES; i++)
+	// initialise frame
+	for (int i = 0; i < MAX_ROWS; i++)
+	{
+		fr[i].x = 0;
+		fr[i].y = 0;
+		fr[i].w = 0;
+		fr[i].h = 0;
+		fr[i].bgColour = fPtr[i].bgColour;
+		fr[i].isOutLine = false;
+		fr[i].isTouch = false;
+		fr[i].isEnable = false;
+	}
+
+	// load frame
+	for (int i = 0; i < rows; i++)
 	{
 		fr[i].x = fPtr[i].x;
 		fr[i].y = fPtr[i].y;

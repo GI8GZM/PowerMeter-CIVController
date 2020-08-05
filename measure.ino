@@ -163,10 +163,10 @@ void measure()
 			}
 		}
 
+		displayValue(vInVolts, vIn);
 		displayValue(netPower, netPwr);
 		displayValue(dBm, dB);
 		displayValue(peakPower, pkPwr);
-
 		displayValue(fwdPower, fwdPwr);
 		displayValue(refPower, refPwr);
 		displayValue(fwdVolts, fwdV);
@@ -189,7 +189,7 @@ void measure()
 
 		// check if screen has been touched
 		if (ts.tirqTouched())
-			chkTouchFrame(NUM_FRAMES);
+			chkTouchFrame(MAX_ROWS);
 
 		// ensure measure loop slower than getADC() sample frequency
 		// measure loop = 30microsecs, delay(>5) millisecs
