@@ -16,11 +16,11 @@ No publication without acknowledgement to author
 */
 void measure()
 {
-	unsigned long fA, rA, fPk, rPk;										// variables from adc interrupts
-	float  fwdV, refV, fwdPkV, refPkV;									// calulated ADC voltages
-	float fwdPwr, refPwr, fwdPkPwr, refPkPwr;							// calculated powers
-	float netPwr, pep, dB, swr = 1.0;
-	static float pkPwr = 0;
+	unsigned long fA =0, rA=0, fPk=0, rPk=0;										// variables from adc interrupts
+	float  fwdV=0, refV=0, fwdPkV, refPkV;									// calulated ADC voltages
+	float fwdPwr = 0.0, refPwr=0.0, fwdPkPwr, refPkPwr;							// calculated powers
+	float netPwr, pep, dB;
+	static float pkPwr = 0, swr = 1.0;
 
 	static float fwdVPrev = 0, refVPrev = 0;							// variables for exponential smoothing
 	static float fwdPkVPrev = 0, refPkVPrev = 0;						// variables for exponential smoothing
@@ -144,7 +144,6 @@ void measure()
 				swrColour = CL(255, grn, 0);
 			}
 			val[vswr].colour = swrColour;
-			displayValue(vswr, swr);								// display swr while power on
 		}
 
 		// display net power, if power on, use RED background
@@ -164,6 +163,7 @@ void measure()
 		displayValue(netPower, netPwr);
 		displayValue(dBm, dB);
 		displayValue(peakPower, pkPwr);
+		displayValue(vswr, swr);
 		displayValue(fwdPower, fwdPwr);
 		displayValue(refPower, refPwr);
 		displayValue(fwdVolts, fwdV);
@@ -186,7 +186,7 @@ void measure()
 
 		// check if screen has been touched
 		if (ts.tirqTouched())
-			chkTouchFrame(sizeof(fr)/sizeof(frame));
+			chkTouchFrame(sizeof(fr) / sizeof(frame));
 
 		// ensure measure loop slower than getADC() sample frequency
 		// measure loop = 30microsecs, delay(>5) millisecs

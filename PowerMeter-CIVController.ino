@@ -18,7 +18,7 @@ No publication without acknowledgement to author
 
 // comment following line for Basic SWR/Power Metet.  Uncomment for + C-IV control
 #define		CIV										// build with CIV functions
-#define		TEENSY40								// comment this line for default = Teensy 3.2
+//#define		TEENSY40								// comment this line for default = Teensy 3.2
 #define		TOUCH_REVERSED true 					// touchscreen, true = reversed, false = normal
 #define     SCREEN_ROTATION 1						// rotation for tft and touchscreen
 
@@ -34,7 +34,7 @@ No publication without acknowledgement to author
 #include <font_AwesomeF180.h>						// copyright symbol
 #include <font_AwesomeF000.h>						// + / - symbols
 
-// gheader for Teensy+ ILI9341 touch display board
+// header for Teensy+ ILI9341 touch display board
 #include "teensyDisplay.h"
 
 // power meter specific
@@ -99,7 +99,6 @@ void setup()
 
 	// set circular buffer default sample size
 	samples = optDefault.val;
-
 
 	// initialise ADC, set interrupt timer
 	initADC();
@@ -211,7 +210,7 @@ void initDisplay()
 		freqTuneStatus(currFreq, -1);
 
 		// set current frequency for freq difference tuner
-		val[tuner].prevDispVal = currFreq;
+		val[tuner].prevVal = currFreq;
 
 		//frequency tune initialise
 		// use (0) as it's a program call
@@ -319,7 +318,7 @@ copies default frame setting (frame.h) to  frame pointer
 void copyFrame(frame* fPtr, int rows)
 {
 	// initialise frame - disable all rows
-	int maxRows = MAX_ROWS;
+	int maxRows = MAX_FRAMES;
 	for (int i = 0; i < maxRows; i++)
 	{
 		fr[i].x = 0;

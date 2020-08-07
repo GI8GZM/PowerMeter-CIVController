@@ -44,7 +44,7 @@ No publication without acknowledgement to author
 
 /*------  measure() constants -------------------------------*/
 // offset voltages
-#define	FV_ZEROADJ				-0.00015				    // ADC zero offset voltage
+#define	FV_ZEROADJ				-0.0001				    // ADC zero offset voltage
 #define	RV_ZEROADJ				-0.0000			        // ADC zero offset voltage
 
 // Direct power conversion constants
@@ -87,7 +87,7 @@ No publication without acknowledgement to author
 
 Metro netPwrTimer = Metro(50);					// net power hold timer
 Metro netPwrPkTimer = Metro(1000);					// peak power hold timer
-Metro pepTimer = Metro(300);				   		// pep hold timer
+Metro pepTimer = Metro(500);				   		// pep hold timer
 Metro plotTimer = Metro(50);				   		// pep hold timer
 
 #ifdef CIV
@@ -111,7 +111,7 @@ constexpr int putBCD(int n)
 
 
 /* ------------   define frame positions, text formats, value display ----------------*/
-// Frame positions -------------------------
+// List of frame positions -------------------------
 enum frameNames {
 	vInVolts,			// vIn volts
 	netPower,			// net Pwr
@@ -155,10 +155,11 @@ struct frame {
 };
 
 #ifdef CIV																	  
-// default frame layout 
+// default frames layout 
 frame defFrame[] = {
-	{ 110, 75, 100, 15,		BG_COLOUR,	false,	false,	false},			// vIn volts
-	{ 5, 5, 100, 85,		BG_COLOUR,	true,	true,	true},			// net Pwr
+//     x    y   w    h      bgColour  isOutLine isTouch isEnable
+	{ 110, 75, 205, 20,		BG_COLOUR,	true,	false,	false},			// vIn volts
+	{ 5, 5, 100, 90,		BG_COLOUR,	true,	true,	true},			// net Pwr
 	{ 110, 5, 100, 65,		BG_COLOUR,	true,	true,	true},			// peak Pwr
 	{ 215, 5, 100, 65,		BG_COLOUR,	true,	true,	true},			// VSWR frame
 	{ 5, 5, 100, 85,		BG_COLOUR,	true,	false,	false},			// dBm
@@ -186,8 +187,9 @@ frame defFrame[] = {
 };
 #endif
 
-// basic frame layout 
+// basic frames layout 
 frame basicFrame[] = {
+//     x    y   w    h      bgColour  isOutLine isTouch isEnable
 	{ 110, 75, 100, 15,		BG_COLOUR,	false,	false,	false},			// vIn volts
 	{ 5, 5, 100, 90,		BG_COLOUR,	true,	true,	true},			// net Pwr
 	{ 110, 5, 100, 65,		BG_COLOUR,	true,	true,	true},			// peak Pwr
@@ -206,9 +208,10 @@ frame basicFrame[] = {
 	{ 215, 160, 75, 40,		BG_COLOUR,	true,	false,	false},			// weighting for exp smoothing
 };
 
-// calibration frame layout
+// calibration frames layout
 frame calFrame[] = {
-	{ 110, 75, 205, 25,		BG_COLOUR,	true,	false,	true},			// vIn volts
+//     x    y   w    h      bgColour  isOutLine isTouch isEnable
+	{ 110, 75, 205, 25,		BG_COLOUR,	false,	false,	true},			// vIn volts
 	{ 5, 5,	100, 85,		BG_COLOUR,	true,	true,	true},			// net Pwr
 	{ 110, 5, 100, 65,		BG_COLOUR,	true,	true,	true},			// peak Pwr
 	{ 215, 5, 100, 65,		BG_COLOUR,	true,	true,	true},			// VSWR frame
@@ -227,14 +230,14 @@ frame calFrame[] = {
 };
 
 #ifdef CIV
-#define MAX_ROWS sizeof(defFrame)/sizeof(frame)
+#define MAX_FRAMES sizeof(defFrame)/sizeof(frame)
 #else
-#define NUM_FRAMES 16
+#define MAX_FRAMES 16
 #endif
-frame fr[MAX_ROWS];					// working frame array - copy in defFrame, basicFrame or calFrame				
+frame fr[MAX_FRAMES];					// working frame array - copy in defFrame, basicFrame or calFrame				
 
-#define RADIUS 5				// frame corner radius
-#define LINE_COLOUR LIGHTGREY	// frame line colour
+#define RADIUS 5						// frame corner radius
+#define LINE_COLOUR LIGHTGREY			// frame line colour
 
 
 
@@ -245,13 +248,15 @@ struct label {
 	char txt[30];					// frame label text
 	int colour;						// text colour
 	ILI9341_t3_font_t  font;		// text font size
-	char xJustify;					// 'L'eft, 'C'entre, 'R'ight
+	// xJustify -  'L'eft, 'C'entre, 'R'ight.  Value is Centred in available space
+	//'F' is left justified, val spacing use val.fmt
+	char xJustify;					 
 	char yJustify;					// 'T'op, 'M'iddle, 'B'ottom
 	int stat;						// status, used for update label display, -1 for errors
 };
 
 label lab[] = {
-	{ "     Supply Volts: ",	YELLOW,		FONT12,		'L', 'M', false,	},		// vIn volts
+	{ "     Supply Volts:",	YELLOW,		FONT12,		'F', 'M', false,	},		// vIn volts
 	{ "Watts",		FG_COLOUR,		FONT14,     'C', 'B', false,	},		// net Pwr
 	{ "Pep",		FG_COLOUR,		FONT14,		'C', 'B', false,	},		// peak Pwr
 	{ "vSWR",		FG_COLOUR,		FONT14,		'C', 'B', false,	},		// VSWR frame
@@ -285,42 +290,43 @@ label lab[] = {
 
 // value ---------------------------------------------------------------------------
 struct value {
-	float prevDispVal;				// previous display value
-	int decs;						// decimals
+	float prevVal;				// previous display value
+	int decs;						// decimals - not used unless sprintf not supported
+	char fmt[10];					// sprintf format
 	int colour;						// text colour
 	ILI9341_t3_font_t  font;		// text font size
 	bool isUpdate;					// true forces display update
 };
 
 value val[] = {
-	{ 0.0, 1,	 YELLOW,		FONT12,	    true},		// vIn volts
-	{ 0.0, 0,	 FG_COLOUR,		FONT40,	    true},		// net Pwr
-	{ 0.0, 0,	 FG_COLOUR,		FONT32,	    true},		// peak Pwr
-	{ 0.0, 1,	 ORANGE,		FONT28,	    true},		// VSWR frame
-	{ 0.0, 0,	 GREEN,			FONT40,	    true},		// dBm
-	{ 0.0, 3,	 ORANGE,		FONT18,	    true},		// forward Pwr
-	{ 0.0, 3,	 ORANGE,		FONT18,	    true},		// reflected Pwr
-	{ 0.0, 5,	 ORANGE,		FONT20,	    true},		// forward volts
-	{ 0.0, 5,	 ORANGE,		FONT20,	    true},		// reflected volts
-	{ 0.0, 0,	 ORANGE,		FONT18,	    true},		// power meter
-	{ 0.0, 0,	 ORANGE,		FONT18,	    true},		// swr meter
-	{ 0.0, 0,	 BG_COLOUR,		FONT16,	    true},		// options button frame
-	{ 0.0, 0,	 CIV_COLOUR,	FONT18,	    true},		// samples - calibrate
-	{ 0.0, 0,	 CIV_COLOUR,	FONT18,	    true},		// samples - default
-	{ 0.0, 0,	 CIV_COLOUR,	FONT18,	    true},		// samples - alternate
-	{ 0.0, 3,	 CIV_COLOUR,	FONT18,	    true},		// weighting for exp smoothing
+	{ 0.0, 1,	"%6.1f",	YELLOW,		FONT12,	    true},		// vIn volts
+	{ 0.0, 0,	"%1.0f",	FG_COLOUR,	FONT40,	    true},		// net Pwr
+	{ 0.0, 0,	"%1.0f",	FG_COLOUR,	FONT32,	    true},		// peak Pwr
+	{ 0.0, 1,	"%3.1f",	ORANGE,		FONT28,	    true},		// VSWR frame
+	{ 0.0, 0,	"%1.0f",	GREEN,		FONT40,	    true},		// dBm
+	{ 0.0, 3,	"%5.2f",	ORANGE,		FONT18,	    true},		// forward Pwr
+	{ 0.0, 3,	"%5.2f",	ORANGE,		FONT18,	    true},		// reflected Pwr
+	{ 0.0, 5,	"%3.5f",	ORANGE,		FONT20,	    true},		// forward volts
+	{ 0.0, 5,	"%3.5f",	ORANGE,		FONT20,	    true},		// reflected volts
+	{ 0.0, 0,	"%3.0f",	ORANGE,		FONT18,	    true},		// power meter
+	{ 0.0, 0,	"%3.0f",	ORANGE,		FONT18,	    true},		// swr meter
+	{ 0.0, 0,	"%3.0f",	BG_COLOUR,	FONT16,	    true},		// options button frame
+	{ 0.0, 0,	"%3.0f",	CIV_COLOUR,	FONT18,	    true},		// samples - calibrate
+	{ 0.0, 0,	"%3.0f",	CIV_COLOUR,	FONT18,	    true},		// samples - default
+	{ 0.0, 0,	"%3.0f",	CIV_COLOUR,	FONT18,	    true},		// samples - alternate
+	{ 0.0, 3,	"%3.3f",	CIV_COLOUR,	FONT18,	    true},		// weighting for exp smoothing
 
 #ifdef CIV
-	{ 0.0, 0,	 BG_COLOUR,		FONT16,	    true},		// freqTune button frame
-	{ 0.0, 0,	 BG_COLOUR,		FONT16,	    true},		// aqutoBand button frame
-	{ 0.0, 0,	 ORANGE,		FONT18,	    true},		// plot frame
-	{ 0.0, 0,	 CIV_COLOUR,	FONT24,	    true},		// tuner
-	{ 0.0, 0,	 CIV_COLOUR,	FONT24,	    true},		// band Mtrs
-	{ 0.0, 1,	 CIV_COLOUR,	FONT20,	    true},		// spectrum Ref
-	{ 0.0, 0,	 CIV_COLOUR,	FONT24,	    true},		// % Tx power
-	{ 0.0, 5,	 CIV_COLOUR,	FONT24,	    true},		// freq Mhz
-	{ 0.0, 0,	 CIV_COLOUR,	FONT18,	    true},		// freq tune option - difference
-	{ 0.0, 0,	 CIV_COLOUR,	FONT18,	    true},		// auto band time option
+	{ 0.0, 0,	"%3.0f",	BG_COLOUR,	FONT16,	    true},		// freqTune button frame
+	{ 0.0, 0,	"%3.0f",	BG_COLOUR,	FONT16,	    true},		// aqutoBand button frame
+	{ 0.0, 0,	"%3.0f",	ORANGE,		FONT18,	    true},		// plot frame
+	{ 0.0, 0,	"%3.0f",	CIV_COLOUR,	FONT24,	    true},		// tuner
+	{ 0.0, 0,	"%3.0f",	CIV_COLOUR,	FONT24,	    true},		// band Mtrs
+	{ 0.0, 1,	"%3.1f",	CIV_COLOUR,	FONT20,	    true},		// spectrum Ref
+	{ 0.0, 0,	"%3.0f",	CIV_COLOUR,	FONT24,	    true},		// % Tx power
+	{ 0.0, 5,	"%3.5f",	CIV_COLOUR,	FONT24,	    true},		// freq Mhz
+	{ 0.0, 0,	"%3.0f",	CIV_COLOUR,	FONT18,	    true},		// freq tune option - difference
+	{ 0.0, 0,	"%3.0f",	CIV_COLOUR,	FONT18,	    true},		// auto band time option
 #endif
 };
 

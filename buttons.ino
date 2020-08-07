@@ -69,7 +69,7 @@ void peakPwrButton(int tStat)
 		{
 			// calibrate
 			samples = optCal.val;
-			copyFrame(calFrame, sizeof(calFrame)/sizeof(frame));
+			copyFrame(calFrame, sizeof(calFrame) / sizeof(frame));
 			drawDisplay();
 			isCalMode = true;
 		}
@@ -94,18 +94,22 @@ long touch - reboot
 void swrButton(int tStat)
 {
 	// short touch - change decimals & font
+	static bool isDefault = true;
 	if (tStat == 1)
 	{
-		if (val[vswr].decs == 1)
+		if (!isDefault)
 		{
-			val[vswr].font = FONT24;
-			val[vswr].decs = 2;
+			val[vswr].font = FONT28;
+			// copy format string
+			strncpy(val[vswr].fmt, "%3.1",4);
 		}
 		else
 		{
-			val[vswr].font = FONT28;
-			val[vswr].decs = 1;
+			val[vswr].font = FONT24;
+			strncpy(val[vswr].fmt, "%3.2",4);
 		}
+		// toggle status flag
+		isDefault = !isDefault;
 		restoreFrame(vswr);
 	}
 
@@ -196,7 +200,7 @@ void optionsButton(int tStat)
 	{
 		if (samples == optDefault.val)
 			samples = optAlt.val;
-		else if (samples == optAlt.val)	 
+		else if (samples == optAlt.val)
 			samples = optCal.val;
 		else if (samples == optCal.val)
 			samples = optDefault.val;

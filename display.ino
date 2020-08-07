@@ -78,7 +78,6 @@ void displayLabel(int posn, char* txt)						// call with frame postion + str
 /*------------------------------  displayValue() --------------------------------------------------
 displayValue(int posn, float currVal) or displayValue(int posn, float currVal, bool isUpdate)
 updates value if changed from previous of isUpdate = true
-Calls:	dtostrf()  - decimal to string formatted
 */
 void displayValue(int posn, float currVal, bool isUpdate)	// frame position, float current value to display
 {
@@ -97,11 +96,16 @@ void displayValue(int posn, float currVal, bool isUpdate)	// frame position, flo
 
 	// convert floats to strings and compare to detect position changes
 	// scan strings left to right.  erase from changed position
-	// use pixel length of strKeep to calculate blanking rectangle  ie - remaning digits to right
+	// use pixel length of strKeep to calculate blanking rectangle  ie - remaining digits to right
+
 	// convert float values to strings
-	int digits = 0;												// do not set number of digits
-	dtostrf(vPtr->prevDispVal, digits, vPtr->decs, strPrev);
-	dtostrf(currVal, digits, vPtr->decs, strCurr);
+	sprintf(strCurr, vPtr->fmt, currVal);
+	sprintf(strPrev, vPtr->fmt, vPtr->prevVal);
+
+	// NOTE: sprintf may not work with Arduino - use following
+	//int digits = 0;												// do not set number of digits
+	//dtostrf(vPtr->prevDispVal, digits, vPtr->decs, strPrev);
+	//dtostrf(currVal, digits, vPtr->decs, strCurr);
 
 	// compare current and prev, return if no change
 	if (!vPtr->isUpdate && !isUpdate)
@@ -153,6 +157,8 @@ void displayValue(int posn, float currVal, bool isUpdate)	// frame position, flo
 	}
 
 	// get pixel postions, depending on xJustify and label x position.
+	// display value in half remaining space
+
 	// xCurr is current value position, xPrev is previous value
 	// ensure label font is used.  save/restore value font
 	tft.setFont(lPtr->font);
@@ -171,6 +177,11 @@ void displayValue(int posn, float currVal, bool isUpdate)	// frame position, flo
 		xCurr = fPtr->x + (fPtr->w - pixLenLabel - pixLenCurr) / 2;
 		xPrev = fPtr->x + (fPtr->w - pixLenLabel - pixLenPrev) / 2;
 		break;
+	case 'F':
+		// label is Left justified, value spacing uses val.fmt
+		xCurr = fPtr->x + pixLenLabel + 5;
+		xPrev = fPtr->x + pixLenLabel + 5;
+		break;
 	}
 	tft.setFont(vPtr->font);
 
@@ -180,12 +191,12 @@ void displayValue(int posn, float currVal, bool isUpdate)	// frame position, flo
 	tft.fillRect(xPrev - 2 + pixLenKeep, y - 2, pixLenPrev - pixLenKeep + 2, vPtr->font.cap_height + 5, fPtr->bgColour);
 
 	// update current value and overprint entire string
-	// this will overprint keep section without flicker and draw erased portion
+	// this will overprint keep section (no flicker) and draw erased portion
 	tft.setCursor(xCurr, y);
 	tft.print(strCurr);
 
 	// save to previous value
-	vPtr->prevDispVal = currVal;
+	vPtr->prevVal = currVal;
 	// reset update flag
 	vPtr->isUpdate = false;
 }
@@ -217,7 +228,7 @@ void drawMeter(int posn, float curr, float peak)
 	int xCurr = x - mPtr->pkWidth + map(curr, mPtr->sStart, mPtr->sEnd, 0, span);
 	if (xCurr < x)
 		xCurr = x;
-	int xPrev = x - mPtr->pkWidth + map(vPtr->prevDispVal, mPtr->sStart, mPtr->sEnd, 0, span);
+	int xPrev = x - mPtr->pkWidth + map(vPtr->prevVal, mPtr->sStart, mPtr->sEnd, 0, span);
 	if (xPrev < x)
 		xPrev = x;
 	int xPk = x - mPtr->pkWidth + map(peak, mPtr->sStart, mPtr->sEnd, 0, span);
@@ -235,7 +246,7 @@ void drawMeter(int posn, float curr, float peak)
 	else if (xCurr > xPrev)
 		tft.fillRectVGradient(xPrev, y, xCurr - xPrev + 1, barHeight, mPtr->tColour, mPtr->bColour);
 	// save previous display value
-	vPtr->prevDispVal = curr;
+	vPtr->prevVal = curr;
 
 
 	// draw new peak if position has changed
@@ -267,15 +278,15 @@ void drawMeterScale(int posn)
 		return;
 
 	// x,y start posns. allow for gaps to frame
-	int x = fPtr->x + 2;									
-	int y = fPtr->y + 10;									
+	int x = fPtr->x + 2;
+	int y = fPtr->y + 10;
 
 	// base line and text vertival posns
-	int yLine = y + fPtr->h - 30;							
+	int yLine = y + fPtr->h - 30;
 	int yTxt = yLine + 10;
 
-	int span = fPtr->w - 10;								
-	float scale = mPtr->sEnd - mPtr->sStart;				
+	int span = fPtr->w - 10;
+	float scale = mPtr->sEnd - mPtr->sStart;
 
 	int major = mPtr->major;
 	int minor = 5 * major;
