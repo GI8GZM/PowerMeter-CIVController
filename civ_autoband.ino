@@ -64,7 +64,7 @@ void autoBandMain(float freq)							// freq passed is probably current frequency
 		return;
 
 	// frequency manually changed? Turn off and update button
-	if (freq != prevABandFreq)							// freq changed from previous
+	if (freq != prevABandFreq)							// freq changed from previous?
 	{
 		lab[aBand].stat = false;						// reset flags, stop countdown
 		aBandLabel(lab[aBand].stat);					// update label
