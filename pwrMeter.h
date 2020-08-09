@@ -131,7 +131,6 @@ enum frameNames {
 	weighting,			// weighting for exp smoothing
 	freqTune,			// freqTune button frame
 	aBand,				// aqutoBand button frame
-	modPlot,			// plot frame
 	tuner,				// tuner
 	band,				// band Mtrs
 	sRef,				// spectrum Ref
@@ -139,6 +138,7 @@ enum frameNames {
 	freq,				// freq Mhz
 	freqTuneOpt,		// freq tune option - difference
 	aBandTimeOpt,		// auto band time option
+	modPlot,			// plot frame
 };
 
 // frame ------------------------------------------------------------------------
@@ -176,7 +176,6 @@ frame defFrame[] = {
 	{ 215, 160, 75, 40,		BG_COLOUR,	true,	false,	false},			// weighting for exp smoothing
 	{ 5, 215, 100, 25,		BG_COLOUR,	true,	true,	true},			// freqTune button frame
 	{ 110, 215,	100, 25,	BG_COLOUR,	true,	true,	true},			// aqutoBand button frame
-	{ 5, 170, 315, 35,		BG_COLOUR,	false,  false,	false},			// plot frame
 	{ 5, 160, 100, 50,		BG_COLOUR,	true,	true,	true},			// tuner
 	{ 110, 160, 100, 50,	BG_COLOUR,	true,	true,	true},			// band Mtrs
 	{ 215, 160,	100, 50,	BG_COLOUR,	true,	false,	false},			// spectrum Ref
@@ -184,6 +183,7 @@ frame defFrame[] = {
 	{ 110, 160,	200, 50,	BG_COLOUR,	true,	false,	false},			// freq Mhz
 	{ 200, 10,	90, 40,		BG_COLOUR,	true,	false,	false},			// freq tune option - difference
 	{ 200, 125,	90, 40,		BG_COLOUR,	true,	false,	false},			// auto band time option
+	{ 5, 170, 315, 35,		BG_COLOUR,	false,  false,	false},			// plot frame
 };
 #endif
 
@@ -276,7 +276,6 @@ label lab[] = {
 #ifdef CIV
 	{ "FreqTune On",BUTTON_FG,		FONT12,		'L', 'M', false,	},		// freqTune button frame
 	{ "ABand ",		BUTTON_FG,		FONT12,		'L', 'M', false,	},		// aqutoBand button frame
-	{ "",			GREEN,			FONT10,		'C', 'T', true,		},		// plot frame
 	{ "Tune Off",	FG_COLOUR,		FONT18,		'C', 'M', false,	},		// tuner
 	{ "mtrs ",		FG_COLOUR,		FONT14,		'R', 'M', false,	},		// band Mtrs
 	{ "Ref ",		FG_COLOUR,		FONT14,		'R', 'M', false,	},		// spectrum Ref
@@ -284,6 +283,7 @@ label lab[] = {
 	{ "MHz ",		CIV_COLOUR,		FONT18,		'R', 'M', false,	},		// freq Mhz
 	{ " kHz",		CIV_COLOUR,		FONT14,		'R', 'M', false,	},		// freq tune option - difference
 	{ " Secs",		CIV_COLOUR,		FONT14,		'R', 'M', false,	},		// auto band time option
+	{ "",			GREEN,			FONT10,		'C', 'T', true,		},		// plot frame
 #endif
 
 };
@@ -319,7 +319,6 @@ value val[] = {
 #ifdef CIV
 	{ 0.0, 0,	"%3.0f",	BG_COLOUR,	FONT16,	    true},		// freqTune button frame
 	{ 0.0, 0,	"%3.0f",	BG_COLOUR,	FONT16,	    true},		// aqutoBand button frame
-	{ 0.0, 0,	"%3.0f",	ORANGE,		FONT18,	    true},		// plot frame
 	{ 0.0, 0,	"%3.0f",	CIV_COLOUR,	FONT24,	    true},		// tuner
 	{ 0.0, 0,	"%3.0f",	CIV_COLOUR,	FONT24,	    true},		// band Mtrs
 	{ 0.0, 1,	"%3.1f",	CIV_COLOUR,	FONT20,	    true},		// spectrum Ref
@@ -327,6 +326,7 @@ value val[] = {
 	{ 0.0, 5,	"%3.5f",	CIV_COLOUR,	FONT24,	    true},		// freq Mhz
 	{ 0.0, 0,	"%3.0f",	CIV_COLOUR,	FONT18,	    true},		// freq tune option - difference
 	{ 0.0, 0,	"%3.0f",	CIV_COLOUR,	FONT18,	    true},		// auto band time option
+	{ 0.0, 0,	"%3.0f",	ORANGE,		FONT18,	    true},		// plot frame
 #endif
 };
 

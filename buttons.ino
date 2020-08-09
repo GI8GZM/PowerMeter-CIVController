@@ -176,13 +176,25 @@ void freqButton(int tStat)
 			restoreFrame(txPwr);
 		}
 		else
-			// display frequency
 		{
+			// display frequency
 			eraseFrame(band);
 			eraseFrame(txPwr);
 			eraseFrame(sRef);
 			restoreFrame(freq);
 		}
+	}
+
+	if (tStat == 2)
+	{
+		// change up to next ft8 band
+		// if showing frequency, revert to band display and increment
+		eraseFrame(freq);
+		restoreFrame(band);
+		restoreFrame(txPwr);
+		aBandChange(getFreq());
+		int newBand = getBand(getFreq());
+		displayValue(band, hfBand[newBand].mtrs);
 	}
 }
 #endif

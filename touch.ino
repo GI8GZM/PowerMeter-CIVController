@@ -35,7 +35,11 @@ int touch()
 			while (ts.touched() && status < 2)
 			{
 				if (longTouchTimer.check())					// long touch timer
+				{
 					status = 2;
+					// break when long touch detected
+					break;					
+				}
 			}
 		}
 	}
