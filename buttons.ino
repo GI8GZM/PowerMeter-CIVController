@@ -101,12 +101,12 @@ void swrButton(int tStat)
 		{
 			val[vswr].font = FONT28;
 			// copy format string
-			strncpy(val[vswr].fmt, "%3.1",4);
+			strncpy(val[vswr].fmt, "%3.1", 4);
 		}
 		else
 		{
 			val[vswr].font = FONT24;
-			strncpy(val[vswr].fmt, "%3.2",4);
+			strncpy(val[vswr].fmt, "%3.2", 4);
 		}
 		// toggle status flag
 		isDefault = !isDefault;
@@ -188,13 +188,17 @@ void freqButton(int tStat)
 	if (tStat == 2)
 	{
 		// change up to next ft8 band
-		// if showing frequency, revert to band display and increment
-		eraseFrame(freq);
-		restoreFrame(band);
-		restoreFrame(txPwr);
-		aBandChange(getFreq());
-		int newBand = getBand(getFreq());
+		int newBand = aBandChange(getFreq());
+		float newFreq = getFreq();
+
+		// displayValue only displays enabled value
 		displayValue(band, hfBand[newBand].mtrs);
+		displayValue(freq, newFreq);
+
+		// if ABand enabled, restart new countdown
+		if (lab[aBand].stat)
+			aBandRestart(optABand.val);
+
 	}
 }
 #endif

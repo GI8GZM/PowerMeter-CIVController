@@ -19,6 +19,9 @@ No publication without acknowledgement to author
 // comment following line for Basic SWR/Power Metet.  Uncomment for + C-IV control
 #define		CIV										// build with CIV functions
 //#define		TEENSY40								// comment this line for default = Teensy 3.2
+
+//#define		TOUCH_REVERSED false 					// touchscreen, true = reversed, false = normal
+//#define     SCREEN_ROTATION 3						// rotation for tft and touchscreen
 #define		TOUCH_REVERSED true 					// touchscreen, true = reversed, false = normal
 #define     SCREEN_ROTATION 1						// rotation for tft and touchscreen
 
@@ -210,7 +213,7 @@ void initDisplay()
 		freqTuneStatus(currFreq, -1);
 
 		// set current frequency for freq difference tuner
-		val[tuner].prevVal = currFreq;
+		val[tuner].prevDispVal = currFreq;
 
 		//frequency tune initialise
 		// use (0) as it's a program call

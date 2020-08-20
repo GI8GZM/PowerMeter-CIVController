@@ -16,17 +16,15 @@ No publication without acknowledgement to author
 */
 void measure()
 {
-	unsigned long fA =0, rA=0, fPk=0, rPk=0;										// variables from adc interrupts
-	float  fwdV=0, refV=0, fwdPkV, refPkV;									// calulated ADC voltages
-	float fwdPwr = 0.0, refPwr=0.0, fwdPkPwr, refPkPwr;							// calculated powers
+	unsigned long fA = 0, rA = 0, fPk = 0, rPk = 0;						// variables from adc interrupts
+	float  fwdV = 0, refV = 0, fwdPkV, refPkV;							// calulated ADC voltages
+	float fwdPwr = 0.0, refPwr = 0.0, fwdPkPwr, refPkPwr;				// calculated powers
 	float netPwr, pep, dB;
 	static float pkPwr = 0, swr = 1.0;
 
-	static float fwdVPrev = 0, refVPrev = 0;							// variables for exponential smoothing
-	static float fwdPkVPrev = 0, refPkVPrev = 0;						// variables for exponential smoothing
-
 	float vIn;
 	float adcConvert = 3.3 / adc->adc0->getMaxValue();					// 3.3 (max volts) / adc max value, varies with resolution+
+	float weight = (float)optWeight.val / 1000;							// exponential smoothing weight
 
 	// set true for netPower display (red b/ground)
 	lab[netPower].stat = true;
@@ -43,10 +41,10 @@ void measure()
 
 		// get ACD results - stop / restart interrupts while copying interrupt data
 		noInterrupts();
-		fA = fwdAvg;
-		rA = refAvg;
-		fPk = fwdPk;
-		rPk = refPk;
+		fA = a1Avg;
+		rA = a0Avg;
+		fPk = a1Peak;
+		rPk = a0Peak;
 		interrupts();
 
 		// calculate voltages
@@ -54,19 +52,6 @@ void measure()
 		refV = rA * adcConvert + RV_ZEROADJ;
 		fwdPkV = fPk * adcConvert + FV_ZEROADJ;
 		refPkV = rPk * adcConvert + RV_ZEROADJ;
-
-		// apply exponential smoothing
-		float weight = (float)optWeight.val / 1000;
-		weight = 1;
-		fwdV = sigProcess(fwdV, fwdVPrev, weight);
-		fwdVPrev = fwdV;
-		refV = sigProcess(refV, refVPrev, weight);
-		refVPrev = refV;
-		weight = 1;
-		fwdPkV = sigProcess(fwdPkV, fwdPkVPrev, weight);
-		fwdPkVPrev = fwdPkV;
-		refPkV = sigProcess(refPkV, refPkVPrev, weight);
-		refPkVPrev = refPkV;
 
 		//calculate power(watts) directly from voltages
 		fwdPwr = pwrCalc(fwdV);
@@ -160,7 +145,11 @@ void measure()
 		}
 
 		displayValue(vInVolts, vIn);
+
+		netPwr = sigProcess(netPower, netPwr, weight);
 		displayValue(netPower, netPwr);
+		analogWrite(A14, (int)netPwr * 255 / 100);
+
 		displayValue(dBm, dB);
 		displayValue(peakPower, pkPwr);
 		displayValue(vswr, swr);
@@ -242,16 +231,18 @@ signal processing - fast attack, exponential decay
 weight controls decay
 */
 
-float sigProcess(float currSig, float prevSig, float weight)
+float sigProcess(int posn, float currSig, float weight)
 {
 	float sig;
+	float prevSig = val[posn].prevSigVal;
 
-	//if (currSig > prevSig)
-	//	// fast attack - immediate step up to higher value
-	//	sig = currSig;
-	//else
-		 // exponential decay
-	sig = weight * currSig + (1 - weight) * prevSig;
+	if (currSig > prevSig)
+		// fast attack - immediate step up to higher value
+		sig = currSig;
+	else
+		// exponential decay
+		sig = weight * currSig + (1 - weight) * prevSig;
+	val[posn].prevSigVal = sig;
 
 	return sig;
 }

@@ -89,7 +89,7 @@ void autoBandMain(float freq)							// freq passed is probably current frequency
 /*----------------------------------- aBandChange() -----------------------------
 called by autoband()
 */
-void aBandChange(float freq)
+int aBandChange(float freq)
 {
 	int nextBand;
 
@@ -105,10 +105,13 @@ void aBandChange(float freq)
 		if (nextBand == NUM_BANDS)
 			nextBand = 0;
 		if (nextBand == currBand)						// round the loop, all disabled so return
-			return;										// highly unlikely
+			return -1;										// highly unlikely
 	}
 
 	putFreq(hfBand[nextBand].ft8Freq);					// set radio to new frequency
+
+	// return new band number
+	return nextBand;
 }
 
 
@@ -120,7 +123,7 @@ void aBandLabel(int stat)
 {
 	if (!stat)											// aBand off
 	{
-		strcpy(lab[aBand].txt, "  ABand OFF");
+		strcpy(lab[aBand].txt, "  ABand Off");
 		lab[aBand].colour = BUTTON_FG;
 		fr[aBand].bgColour = BUTTON_BG;
 		displayLabel(aBand);							// display Off label, blanks time

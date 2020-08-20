@@ -71,7 +71,7 @@ void setAvgSamples()
 		case 1:										// decrement sample size, min = 1
 			optCal.val -= SAMPLES_CHANGE;
 			if (optCal.val <= 1)
-				optCal.val = 1;
+				optCal.val = 0;
 			break;
 		case 2:										// increment sample size, limit to max
 			if (optDefault.val == 1)
@@ -83,7 +83,7 @@ void setAvgSamples()
 		case 3:										// decrement sample size, min = 1
 			optDefault.val -= SAMPLES_CHANGE;
 			if (optDefault.val <= 1)
-				optDefault.val = 1;
+				optDefault.val = 0;
 			break;
 		case 4:										// increment calibrate sample size
 			if (optAlt.val == 1)
@@ -95,7 +95,7 @@ void setAvgSamples()
 		case 5:										// decrement calibrate sample size, min = 1
 			optAlt.val -= SAMPLES_CHANGE;
 			if (optAlt.val <= 1)
-				optAlt.val = 1;
+				optAlt.val = 0;
 			break;
 		case 6:
 			// exponential weighting * 1000, ie 50 = 50/1000 = .05

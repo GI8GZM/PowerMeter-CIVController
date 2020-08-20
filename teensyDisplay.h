@@ -31,9 +31,9 @@ board: referes to ILI9341 + Touch board   */
 #define TFT_SCK         13                          // board: 7(SCK), 10(T_CLK)     *** used in library, not referenced in code
 #define TFT_SDO         12                          // board: 9(SDO), 13(T_DO)      *** used in library, not referenced in code
 
+#define VIN_ADC_PIN		14							// (A0) Supply Volts measurement
 #define FWD_ADC_PIN     15                          // (A1) ACD input pin - forward power
 #define REF_ADC_PIN     16                          // (A2) ACD input pin- reflected power
-#define VIN_ADC_PIN		18							// ADC VCC measurement
 #define SERIAL_RX1      0                           // Serial1 RX pin
 #define SERIAL_TX1      1                           // Serial1 Tx pin
 #define SERIAL_RX3      7                           // Serial3 RX pin

@@ -290,7 +290,8 @@ label lab[] = {
 
 // value ---------------------------------------------------------------------------
 struct value {
-	float prevVal;				// previous display value
+	float prevDispVal;				// previous value
+	float prevSigVal;				// previous signal processing value
 	int decs;						// decimals - not used unless sprintf not supported
 	char fmt[10];					// sprintf format
 	int colour;						// text colour
@@ -299,34 +300,34 @@ struct value {
 };
 
 value val[] = {
-	{ 0.0, 1,	"%6.1f",	YELLOW,		FONT12,	    true},		// vIn volts
-	{ 0.0, 0,	"%1.0f",	FG_COLOUR,	FONT40,	    true},		// net Pwr
-	{ 0.0, 0,	"%1.0f",	FG_COLOUR,	FONT32,	    true},		// peak Pwr
-	{ 0.0, 1,	"%3.1f",	ORANGE,		FONT28,	    true},		// VSWR frame
-	{ 0.0, 0,	"%1.0f",	GREEN,		FONT40,	    true},		// dBm
-	{ 0.0, 3,	"%5.2f",	ORANGE,		FONT18,	    true},		// forward Pwr
-	{ 0.0, 3,	"%5.2f",	ORANGE,		FONT18,	    true},		// reflected Pwr
-	{ 0.0, 5,	"%3.5f",	ORANGE,		FONT20,	    true},		// forward volts
-	{ 0.0, 5,	"%3.5f",	ORANGE,		FONT20,	    true},		// reflected volts
-	{ 0.0, 0,	"%3.0f",	ORANGE,		FONT18,	    true},		// power meter
-	{ 0.0, 0,	"%3.0f",	ORANGE,		FONT18,	    true},		// swr meter
-	{ 0.0, 0,	"%3.0f",	BG_COLOUR,	FONT16,	    true},		// options button frame
-	{ 0.0, 0,	"%3.0f",	CIV_COLOUR,	FONT18,	    true},		// samples - calibrate
-	{ 0.0, 0,	"%3.0f",	CIV_COLOUR,	FONT18,	    true},		// samples - default
-	{ 0.0, 0,	"%3.0f",	CIV_COLOUR,	FONT18,	    true},		// samples - alternate
-	{ 0.0, 3,	"%3.3f",	CIV_COLOUR,	FONT18,	    true},		// weighting for exp smoothing
-
-#ifdef CIV
-	{ 0.0, 0,	"%3.0f",	BG_COLOUR,	FONT16,	    true},		// freqTune button frame
-	{ 0.0, 0,	"%3.0f",	BG_COLOUR,	FONT16,	    true},		// aqutoBand button frame
-	{ 0.0, 0,	"%3.0f",	CIV_COLOUR,	FONT24,	    true},		// tuner
-	{ 0.0, 0,	"%3.0f",	CIV_COLOUR,	FONT24,	    true},		// band Mtrs
-	{ 0.0, 1,	"%3.1f",	CIV_COLOUR,	FONT20,	    true},		// spectrum Ref
-	{ 0.0, 0,	"%3.0f",	CIV_COLOUR,	FONT24,	    true},		// % Tx power
-	{ 0.0, 5,	"%3.5f",	CIV_COLOUR,	FONT24,	    true},		// freq Mhz
-	{ 0.0, 0,	"%3.0f",	CIV_COLOUR,	FONT18,	    true},		// freq tune option - difference
-	{ 0.0, 0,	"%3.0f",	CIV_COLOUR,	FONT18,	    true},		// auto band time option
-	{ 0.0, 0,	"%3.0f",	ORANGE,		FONT18,	    true},		// plot frame
+	{ 0.0,	0.0, 1,	"%6.1f",	YELLOW,		FONT12,	    true},		// vIn volts
+	{ 0.0,	0.0, 0,	"%1.0f",	FG_COLOUR,	FONT40,	    true},		// net Pwr
+	{ 0.0,	0.0, 0,	"%1.0f",	FG_COLOUR,	FONT32,	    true},		// peak Pwr
+	{ 0.0,	0.0, 1,	"%3.1f",	ORANGE,		FONT28,	    true},		// VSWR frame
+	{ 0.0,	0.0, 0,	"%1.0f",	GREEN,		FONT40,	    true},		// dBm
+	{ 0.0,	0.0, 3,	"%5.2f",	ORANGE,		FONT18,	    true},		// forward Pwr
+	{ 0.0,	0.0, 3,	"%5.2f",	ORANGE,		FONT18,	    true},		// reflected Pwr
+	{ 0.0,	0.0, 5,	"%3.5f",	ORANGE,		FONT20,	    true},		// forward volts
+	{ 0.0,	0.0, 5,	"%3.5f",	ORANGE,		FONT20,	    true},		// reflected volts
+	{ 0.0,	0.0, 0,	"%3.0f",	ORANGE,		FONT18,	    true},		// power meter
+	{ 0.0,	0.0, 0,	"%3.0f",	ORANGE,		FONT18,	    true},		// swr meter
+	{ 0.0,	0.0, 0,	"%3.0f",	BG_COLOUR,	FONT16,	    true},		// options button frame
+	{ 0.0,	0.0, 0,	"%3.0f",	CIV_COLOUR,	FONT18,	    true},		// samples - calibrate
+	{ 0.0,	0.0, 0,	"%3.0f",	CIV_COLOUR,	FONT18,	    true},		// samples - default
+	{ 0.0,	0.0, 0,	"%3.0f",	CIV_COLOUR,	FONT18,	    true},		// samples - alternate
+	{ 0.0,	0.0, 3,	"%3.3f",	CIV_COLOUR,	FONT18,	    true},		// weighting for exp smoothing
+			
+#ifdef CIV	
+	{ 0.0,	0.0, 0,	"%3.0f",	BG_COLOUR,	FONT16,	    true},		// freqTune button frame
+	{ 0.0,	0.0, 0,	"%3.0f",	BG_COLOUR,	FONT16,	    true},		// aqutoBand button frame
+	{ 0.0,	0.0, 0,	"%3.0f",	CIV_COLOUR,	FONT24,	    true},		// tuner
+	{ 0.0,	0.0, 0,	"%3.0f",	CIV_COLOUR,	FONT24,	    true},		// band Mtrs
+	{ 0.0,	0.0, 1,	"%3.1f",	CIV_COLOUR,	FONT20,	    true},		// spectrum Ref
+	{ 0.0,	0.0, 0,	"%3.0f",	CIV_COLOUR,	FONT24,	    true},		// % Tx power
+	{ 0.0,	0.0, 5,	"%3.5f",	CIV_COLOUR,	FONT24,	    true},		// freq Mhz
+	{ 0.0,	0.0, 0,	"%3.0f",	CIV_COLOUR,	FONT18,	    true},		// freq tune option - difference
+	{ 0.0,	0.0, 0,	"%3.0f",	CIV_COLOUR,	FONT18,	    true},		// auto band time option
+	{ 0.0,	0.0, 0,	"%3.0f",	ORANGE,		FONT18,	    true},		// plot frame
 #endif
 };
 

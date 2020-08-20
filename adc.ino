@@ -21,8 +21,8 @@ ADC id triggered by interrupt interval timer
 ADC* adc = new ADC();							    // adc object
 ADC::Sync_result result;						    // ADC result structure
 IntervalTimer sampleTimer;						    // getADC interupt timer
-volatile long fwdAvg, refAvg;						// circular buffer totals
-volatile unsigned int refPk, fwdPk;					// circular buffer peak values
+volatile long a0Avg, a1Avg;							// circular buffer averages
+volatile unsigned int a0Peak, a1Peak;				// circular buffer peak values
 
 
 
@@ -30,84 +30,75 @@ volatile unsigned int refPk, fwdPk;					// circular buffer peak values
 interrupt called by IntervalTimer - see initADC()
 get raw results from ADC and enter into circular/FIFO buffer
 calculates average and peak values for ACD results
-peak values held for pkTimer duration
 ------------------------------------------------------------------------------------------*/
 void getADC()
 {
 	//digitalWriteFast(TEST_PIN, HIGH);
 
-	volatile static int sample = 0;							// ADC circular buffer sample
-	volatile static int currAvgSamples = 0, prevAvgSamples = 0;
-	volatile static long fwdSum = 0, refSum = 0;
-	volatile static unsigned int fwdS[MAXBUF + 1] = {};		// fwd buffer used by interrupt routine
-	volatile static unsigned int refS[MAXBUF + 1] = {};		// ref buffer used by interrupt routine
+	volatile static int count = 0;								// ADC circular buffer sample count
+	volatile static int currSamples = 0, prevSamples = 0;
+	volatile static long a1Sum = 0, a0Sum = 0;					// sum of buffer samples
+	volatile static unsigned int a1Sample[MAXBUF + 1] = {};		// fwd buffer used by interrupt routine
+	volatile static unsigned int a0Sample[MAXBUF + 1] = {};		// ref buffer used by interrupt routine
 
-	// samples related to sample frequency
-	//currAvgSamples = samples * SAMPLE_FREQ / 100;
-	currAvgSamples = samples * MAXBUF / 100;
+	// samples set by options
+	// set as % of buffer space
+	if (samples != 0)
+		currSamples = samples * MAXBUF / 100;
+	else
+		currSamples = 1;
 
 	// check for change of currSamplesAvg, reset buffers, etc
-	if (currAvgSamples != prevAvgSamples)
+	if (currSamples != prevSamples)
 	{
 		for (int i = 0; i < MAXBUF; i++)
 		{
-			fwdS[i] = 0;
-			refS[i] = 0;
+			a1Sample[i] = 0;
+			a0Sample[i] = 0;
 		}
-		sample = 0;
-		fwdSum = 0;
-		refSum = 0;
-		fwdPk = 0;
-		refPk = 0;
+		count = 0;
+		a1Sum = 0;
+		a0Sum = 0;
+		a1Peak = 0;
+		a0Peak = 0;
 	}
 
-
-	//adc->startSynchronizedSingleRead(FWD_ADC_PIN, REF_ADC_PIN);
-	//result = adc->readSynchronizedSingle();
-	//adc->startSynchronizedContinuous(FWD_ADC_PIN, REF_ADC_PIN);
-	//result = adc->readSynchronizedContinuous();
-
-
-
 	// read ADC, both channels. 16bit needs unsigned
-
 	result = adc->analogSyncRead(FWD_ADC_PIN, REF_ADC_PIN);
 
 	// circular / FIFO buffer (moving) averaging
 	// do reflected power first to have refS[sample] for peak
-	refSum = refSum - refS[sample];							// remove oldest from running total
-	refS[sample] = (uint16_t)result.result_adc0;						// save result
-	refSum = refSum + refS[sample];							// add newest to running total
+	a0Sum = a0Sum - a0Sample[count];							// remove oldest from running total
+	a0Sample[count] = (uint16_t)result.result_adc0;				// save result
+	a0Sum = a0Sum + a0Sample[count];							// add newest to running total
 
-	fwdSum = fwdSum - fwdS[sample];
-	fwdS[sample] = (uint16_t)result.result_adc1;
-	fwdSum = fwdSum + fwdS[sample];
+	a1Sum = a1Sum - a1Sample[count];
+	a1Sample[count] = (uint16_t)result.result_adc1;
+	a1Sum = a1Sum + a1Sample[count];
 
 	// peak forward sample + corresponding reflected
-	if (fwdS[sample] > fwdPk)
+	if (a1Sample[count] > a1Peak)
 	{
-		fwdPk = fwdS[sample];
-		refPk = refS[sample];
+		a1Peak = a1Sample[count];
+		a0Peak = a0Sample[count];
 	}
 
 	// averages
-	fwdAvg = fwdSum / currAvgSamples;
-	refAvg = refSum / currAvgSamples;
+	a1Avg = a1Sum / currSamples;
+	a0Avg = a0Sum / currSamples;
 
 	// increment sample, if max currAvgSamples, back to start
-	sample++;
-	if (sample >= currAvgSamples)
+	count++;
+	if (count >= currSamples)
 	{
-		sample = 0;
-		 // reset peaks to current sample
-		fwdPk = fwdS[sample];
-		refPk = refS[sample];
-		//fwdPk = 0;
-		//refPk = 0;
+		count = 0;
+		// reset peaks to current sample
+		a1Peak = a1Sample[count];
+		a0Peak = a0Sample[count];
 
 		//digitalWrite(TEST_PIN, !digitalRead(TEST_PIN));
 	}
-	prevAvgSamples = currAvgSamples;
+	prevSamples = currSamples;
 
 	//digitalWriteFast(TEST_PIN, LOW);
 }
@@ -134,6 +125,6 @@ void initADC()
 
 	// set up interrupt timer (microseconds
 	// SAMPLE_FREQ in hertz - eg 5000
-	sampleTimer.begin(getADC, 1000000/SAMPLE_FREQ);						
+	sampleTimer.begin(getADC, 1000000 / SAMPLE_FREQ);
 }
 

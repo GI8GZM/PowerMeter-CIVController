@@ -100,7 +100,7 @@ void displayValue(int posn, float currVal, bool isUpdate)	// frame position, flo
 
 	// convert float values to strings
 	sprintf(strCurr, vPtr->fmt, currVal);
-	sprintf(strPrev, vPtr->fmt, vPtr->prevVal);
+	sprintf(strPrev, vPtr->fmt, vPtr->prevDispVal);
 
 	// NOTE: sprintf may not work with Arduino - use following
 	//int digits = 0;												// do not set number of digits
@@ -196,7 +196,7 @@ void displayValue(int posn, float currVal, bool isUpdate)	// frame position, flo
 	tft.print(strCurr);
 
 	// save to previous value
-	vPtr->prevVal = currVal;
+	vPtr->prevDispVal = currVal;
 	// reset update flag
 	vPtr->isUpdate = false;
 }
@@ -228,7 +228,7 @@ void drawMeter(int posn, float curr, float peak)
 	int xCurr = x - mPtr->pkWidth + map(curr, mPtr->sStart, mPtr->sEnd, 0, span);
 	if (xCurr < x)
 		xCurr = x;
-	int xPrev = x - mPtr->pkWidth + map(vPtr->prevVal, mPtr->sStart, mPtr->sEnd, 0, span);
+	int xPrev = x - mPtr->pkWidth + map(vPtr->prevDispVal, mPtr->sStart, mPtr->sEnd, 0, span);
 	if (xPrev < x)
 		xPrev = x;
 	int xPk = x - mPtr->pkWidth + map(peak, mPtr->sStart, mPtr->sEnd, 0, span);
@@ -246,7 +246,7 @@ void drawMeter(int posn, float curr, float peak)
 	else if (xCurr > xPrev)
 		tft.fillRectVGradient(xPrev, y, xCurr - xPrev + 1, barHeight, mPtr->tColour, mPtr->bColour);
 	// save previous display value
-	vPtr->prevVal = curr;
+	vPtr->prevDispVal = curr;
 
 
 	// draw new peak if position has changed
